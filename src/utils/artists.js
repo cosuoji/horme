@@ -1,4 +1,5 @@
-  // Sample data with links - replace with your API data
+import onlyfansaudio from "../assets/influencercampaigns/onlyfans.png"
+import gohard from "../assets/influencercampaigns/gohard.png"
 import craze from "../assets/radio/radiocampaigns/craze.png"
 import rayonaBg from "../assets/artists/rayona-bg.png"
 import youngJonnBg from "../assets/artists/youngJonnBg.jpg"
@@ -65,9 +66,15 @@ const artists = [
       tracks: [
       { 
         id: 1, 
-        title: "Craze", 
-        cover: craze,
-        link: "https://rayona.fanlink.tv/craze" 
+        title: "Only Fans", 
+        cover: onlyfansaudio,
+        link: "https://youngjonn.lnk.to/onlyfans" 
+      },
+      { 
+        id: 2, 
+        title: "Jiggy Forever (Album)", 
+        cover: gohard,
+        link: "https://youngjonn.lnk.to/jiggyforever" 
       },
     ],
     videos: [

@@ -15,6 +15,12 @@ import Radio from './Pages/Radio';
 import Label from './Pages/Label';
 import Layout from './Components/Layout';
 import ArtistPage from './Components/ArtistPage';
+import Login from './Pages/Login';
+import Signup from './Pages/Signup';
+import SinglePost from './Pages/BlogPages/SinglePost';
+import BlogLayout from './Layout/BlogLayout';
+import CreatePost from './Pages/BlogPages/CreatePost';
+
 
 const App = () => {
   return (
@@ -36,10 +42,18 @@ const App = () => {
               <Route path="radio" element={<Radio />} />
               <Route path="label-services" element={<Label />} />
             </Route>
-            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog" element={<BlogLayout />}>
+              <Route index element={<Blog />} />
+              <Route path=":id-:slug" element={<SinglePost />} /> 
+              <Route path=":id" element={<SinglePost />} /> {/* Fallback for old URLs */}  
+              <Route path="write" element={<CreatePost />} /> 
+            </Route>
+
             <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
                     {/* Catch-all route */}
-           <Route path="*" element={<Navigate to={"/"} />} />
+           {/* <Route path="*" element={<Navigate to={"/"} />} /> */}
           </Routes>
           </Layout>
         </main>
