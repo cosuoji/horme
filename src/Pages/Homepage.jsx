@@ -103,7 +103,7 @@ export default function Homepage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
               <div className="relative h-full flex flex-col justify-end p-8">
                 <h3 className="text-4xl font-bold text-[#EAE4D5] mb-2">{artist.name}</h3>
-                <p className="text-[#B6B09F] mb-4">{artist.genre} • Latest: {artist.latestTrack}</p>
+                <p className="text-[#B6B09F] mb-4">{artist.genre} • Latest Release: {artist.latestTrack}</p>
                 <div className="flex gap-4">
                   <FaInstagram className="text-xl hover:text-[#EAE4D5] transition" />
                   <FaTwitter className="text-xl hover:text-[#EAE4D5] transition" />
