@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { FaPlay, FaInstagram, FaArrowRight, FaTwitter, FaTiktok } from 'react-icons/fa';
-import youngjonnfeatured from "../assets/artists/youngjonnfeatured.png"
-import rayonafeatured from "../assets/artists/rayonnafeatured.png"
-import heroVideo from "../assets/label-showreel.mp4"
-import useBlogStore from '../store/useBlogStore';
+import { useEffect, useRef, useState } from 'react';
+import { FaChevronLeft, FaChevronRight, FaInstagram, FaTwitter, FaTiktok } from 'react-icons/fa';
+import youngjonnfeatured from "../assets/artists/youngjonnfeatured.png";
+import rayonafeatured from "../assets/artists/rayonnafeatured.png";
+import heroVideo from "../assets/label-showreel.mp4";
+import onlyfans from "../assets/influencercampaigns/onlyfans.png";
+import craze from "../assets/radio/radiocampaigns/craze.png";
+import shaolin from "../assets/shaolin.png";
+import megamoney from "../assets/radio/radiocampaigns/megamoney.png";
+import mreazi from "../assets/mreazi.png";
+import whogopay from "../assets/influencercampaigns/whogopay.png";
 
-
-
-// Sample data - replace with your actual content
 const featuredArtists = [
   {
     id: "youngjonn",
@@ -26,141 +28,150 @@ const featuredArtists = [
   }
 ];
 
+const clients = [
+  { id: 1, name: "Rayonna", logo: craze },
+  { id: 2, name: "Young Jonn", logo: onlyfans },
+  { id: 3, name: "Seyi Vibez", logo: shaolin },
+  { id: 4, name: "Tiwa Savage", logo: megamoney },
+  { id: 5, name: "Mr Eazi", logo: mreazi },
+  { id: 6, name: "Falz", logo: whogopay },
+];
 
 export default function Homepage() {
-  // const [blogPosts, setBlogPosts] = useState([]);
-  // const [loadingBlogs, setLoadingBlogs] = useState(true);
-  // const { postsList, loading, error, fetchPosts } = useBlogStore();
-  
+  const carouselRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const [clonesAdded, setClonesAdded] = useState(false);
 
-  // useEffect(() => {
-  //   // Fetch blog posts from your backend
-  //   const fetchBlogPosts = async () => {
-  //     try {
-  //       const res = await fetchPosts()
-  //       setBlogPosts(res);
-  //     } catch (error) {
-  //       console.error("Error fetching blog posts:", error);
-  //     } finally {
-  //       setLoadingBlogs(false);
-  //     }
-  //   };
+  // Clone items for infinite effect
+  useEffect(() => {
+    if (carouselRef.current && !clonesAdded) {
+      const carousel = carouselRef.current;
+      const children = Array.from(carousel.children);
+      
+      // Clone first few items and append to end
+      children.slice(0, 3).forEach(child => {
+        carousel.appendChild(child.cloneNode(true));
+      });
+      
+      // Clone last few items and prepend to start
+      children.slice(-3).reverse().forEach(child => {
+        carousel.prepend(child.cloneNode(true));
+      });
+      
+      setClonesAdded(true);
+      // Start at the "real" first item
+      setTimeout(() => {
+        carousel.scrollTo({
+          left: carousel.offsetWidth * 3,
+          behavior: 'auto'
+        });
+      }, 50);
+    }
+  }, [clonesAdded]);
 
-  //   fetchBlogPosts();
-  // }, []);
-  
+  const handlePrev = () => {
+    if (!carouselRef.current) return;
+    
+    const carousel = carouselRef.current;
+    const scrollAmount = carousel.offsetWidth * 0.8;
+    
+    if (carousel.scrollLeft <= scrollAmount) {
+      // If near start, jump to near end for infinite effect
+      carousel.scrollTo({
+        left: carousel.scrollWidth - (scrollAmount * 2),
+        behavior: 'auto'
+      });
+    }
+    
+    carousel.scrollBy({
+      left: -scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleNext = () => {
+    if (!carouselRef.current) return;
+    
+    const carousel = carouselRef.current;
+    const scrollAmount = carousel.offsetWidth * 0.8;
+    
+    if (carousel.scrollLeft >= carousel.scrollWidth - (scrollAmount * 2)) {
+      // If near end, jump to near start for infinite effect
+      carousel.scrollTo({
+        left: scrollAmount,
+        behavior: 'auto'
+      });
+    }
+    
+    carousel.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  // Auto-scroll effect
+  useEffect(() => {
+    if (isPaused) return;
+    
+    const interval = setInterval(() => {
+      handleNext();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
   return (
     <div className="bg-[#0a0a0a] text-[#B6B09F]">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-black/50 z-10" />
-        <video 
-          autoPlay 
-          muted 
-          loop 
-          className="absolute inset-0 w-full h-full object-cover opacity-55"
-        >
-          <source src={heroVideo} type="video/mp4" />
-        </video>
-        
-        <div className="relative z-20 text-center px-6">
-          <h1 className="text-5xl md:text-7xl sm:text-7xl lg:text-8xl font-bold text-[#EAE4D5] mb-6">
-            HORME MUSIC WORLDWIDE
-          </h1>
-          <p className="text-xl sm:text-3xl md:text-3xl max-w-3xl mx-auto mb-8">
-            Elevating African talent to global prominence through innovative music solutions
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Link 
-              to="/services" 
-              className="border border-[#EAE4D5] text-[#EAE4D5] px-8 py-3 font-medium hover:bg-[#ffffff10] transition text-4xl"
-            >
-              Our Services
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* ... (keep your existing Hero and Featured Artists sections) ... */}
 
-      {/* Featured Artists */}
+      {/* Infinite Slider Section */}
       <section className="py-20 px-6 md:px-20">
-        <div className="flex justify-between items-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#EAE4D5]">Featured Artists</h2>
-          <Link to="/services/label-services" className="text-[#B6B09F] hover:text-[#EAE4D5] transition">
-            View All →
-          </Link>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#EAE4D5]">
+            Recent Promo from Clients and Partners
+          </h2>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {featuredArtists.map(artist => (
-            <Link 
-              to={`/artists/${artist.id}`} 
-              key={artist.id}
-              className="group relative h-[500px] overflow-hidden"
-            >
+
+        <div 
+          className="relative group"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div
+            ref={carouselRef}
+            className="flex gap-6 overflow-x-hidden scroll-smooth"
+          >
+            {clients.map((client) => (
               <div 
-                className="absolute inset-5 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url(${artist.image})` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-              <div className="relative h-full flex flex-col justify-end p-8">
-                <h3 className="text-4xl font-bold text-[#EAE4D5] mb-2">{artist.name}</h3>
-                <p className="text-[#B6B09F] mb-4">{artist.genre} • Latest Release: {artist.latestTrack}</p>
-                <div className="flex gap-4">
-                  <FaInstagram className="text-xl hover:text-[#EAE4D5] transition" />
-                  <FaTwitter className="text-xl hover:text-[#EAE4D5] transition" />
-                  <FaTiktok className="text-xl hover:text-[#EAE4D5] transition" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-       {/* Blog Section */}
-       {/* <section className="py-20 px-6 md:px-20 border-t border-[#B6B09F]/20">
-        <div className="flex justify-between items-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#EAE4D5]">Latest News</h2>
-          <Link to="/blog" className="text-[#B6B09F] hover:text-[#EAE4D5] transition flex items-center">
-            View All <FaArrowRight className="ml-2" />
-          </Link>
-        </div>
-
-        {loadingBlogs ? (
-          <div className="flex justify-center py-10">
-            <div className="animate-pulse text-[#EAE4D5]">Loading articles...</div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {blogPosts.map(post => (
-              <div key={post.id} className="group border border-[#B6B09F]/30 hover:border-[#EAE4D5]/50 transition duration-500">
-                <Link to={`/blog/${post.slug}`}>
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={post.featuredImage} 
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <span className="text-[#EAE4D5]/80 text-sm">{new Date(post.date).toLocaleDateString()}</span>
-                    <h3 className="text-xl md:text-2xl font-bold text-[#EAE4D5] mt-2 mb-3 group-hover:text-white transition">
-                      {post.title}
-                    </h3>
-                    <p className="text-[#B6B09F] line-clamp-2">{post.excerpt}</p>
-                    <div className="mt-4 flex items-center text-[#EAE4D5] group-hover:text-white transition">
-                      Read more <FaArrowRight className="ml-2" />
-                    </div>
-                  </div>
-                </Link>
+                key={client.id}
+                className="min-w-[320px] md:min-w-[400px] h-[250px] rounded-2xl bg-[#1a1a1a] overflow-hidden shadow-lg flex-shrink-0 border border-[#B6B09F]/20"
+              >
+                <img 
+                  src={client.logo} 
+                  alt={client.name} 
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
               </div>
             ))}
           </div>
-        )}
-      </section>  */}
 
-
-
+          {/* Navigation arrows */}
+          <button 
+            onClick={handlePrev}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 hover:bg-[#0a0a0a] text-[#EAE4D5] p-3 rounded-full z-10 opacity-0 group-hover:opacity-100 transition-all duration-300"
+            aria-label="Previous slide"
+          >
+            <FaChevronLeft className="text-xl" />
+          </button>
+          <button 
+            onClick={handleNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#0a0a0a]/80 hover:bg-[#0a0a0a] text-[#EAE4D5] p-3 rounded-full z-10 opacity-0 group-hover:opacity-100 transition-all duration-300"
+            aria-label="Next slide"
+          >
+            <FaChevronRight className="text-xl" />
+          </button>
+        </div>
+      </section>
       {/* Newsletter */}
       <section className="py-20 bg-[#0a0a0a] border-t border-[#B6B09F]/20 px-6">
         <div className="max-w-4xl mx-auto text-center">
