@@ -1,21 +1,43 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaTwitter, FaFacebookF, FaCalendarAlt, FaUser } from 'react-icons/fa';
-import blogPosts from '../../utils/blogposts';
+import useBlogStore from '../../store/useBlogStore';
+import { formatKebabToTitle } from '../../utils/helpers';
+import {useUserStore} from '../../store/useUserStore';
+import toast from 'react-hot-toast';
+
 
 const SinglePost = () => {
     const navigate = useNavigate();
     const params = useParams();
    
-    
-    // Extract ID whether from '/blog/2' or '/blog/2-slug'
-    const postId = Number(params.id.split("-")[0]);
-    const singleBlog = blogPosts.find(post => post.id === postId);
+    const {postsList, fetchPosts, deletePost} = useBlogStore()
+    const {user} = useUserStore()
 
-  // Redirect to canonical URL (ID+slug) if needed
+   
+    // Extract ID whether from '/blog/2' or '/blog/2-slug'
+    const postId = params.id?.split("-")[0]
+   
+  // Find the post - ensure you're checking the correct ID field
+  const singleBlog = postsList.find(post => post._id === postId || post.id === postId);    
+   
+ 
+   // Fetch posts if not loaded
+   useEffect(() => {
+    if (postsList.length === 0) {
+      fetchPosts();
+    }
+  }, [fetchPosts, postsList.length]);
+
+
+
+ // Redirect to canonical URL
   useEffect(() => {
     if (singleBlog) {
-      const expectedPath = `/blog/${singleBlog.id}-${singleBlog.slug}`;
+      // Ensure you're using the correct slug property name
+      const slug = singleBlog.slug || singleBlog.title?.toLowerCase().replace(/\s+/g, '-');
+      const expectedPath = `/blog/${singleBlog._id || singleBlog.id}-${slug}`;
+      
       if (window.location.pathname !== expectedPath) {
         navigate(expectedPath, { replace: true });
       }
@@ -74,7 +96,7 @@ const SinglePost = () => {
       {/* Cover Image */}
       <div className="w-full h-64 md:h-96 relative">
         <img 
-          src={singleBlog.coverImage} 
+          src={`https://ik.imagekit.io/hormemusic/${singleBlog.coverImage}`} 
           alt={singleBlog.title}
           className="w-full h-full object-cover"
         />
@@ -106,18 +128,29 @@ const SinglePost = () => {
               className="flex items-center hover:text-[#EAE4D5] transition-colors duration-200"
             >
               <span className="bg-[#EAE4D5]/10 hover:bg-[#EAE4D5]/20 px-3 py-1 rounded-full text-sm transition-colors duration-200">
-                {singleBlog.category}
+                {formatKebabToTitle(singleBlog.category)}
               </span>
             </button>
             
             {/* Date */}
             <div className="flex items-center">
               <FaCalendarAlt className="mr-2 text-[#EAE4D5]" />
-              <span>{singleBlog.date}</span>
+              <span>{new Date(singleBlog.createdAt).toLocaleDateString("en-Gb")}</span>
+            </div>
+            <div>
+            {user?.role === "admin" && <button 
+            onClick={() => deletePost(postId)}
+            type="submit" 
+            className={`px-6 py-3 bg bg-[#1a1a1a] text-[#EAE4D5] font-medium rounded-lg transition-colors duration-200`}
+          >
+            Delete Post
+          </button>}
             </div>
           </div>
         </div>
       </div>
+
+      
       
       {/* Post Content */}
       <div className="px-6 md:px-20 pb-20">

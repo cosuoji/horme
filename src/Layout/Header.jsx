@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logo from "../assets/logo.png"
+import { useUserStore } from '../store/useUserStore';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useUserStore();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+
   const navLinks = [
     { name: 'About', path: '/about' },
     { name: 'Services', path: '/services' },
-    { name: 'Blog', path: '/blog' },
+  //  { name: 'Blog', path: '/blog' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -38,6 +41,16 @@ const Header = () => {
                 {link.name}
               </Link>
             ))}
+
+            {user && (
+							<button
+								className='text-[#B6B09F] hover:text-[#EAE4D5] 
+						rounded-md flex items-center transition duration-300 ease-in-out'
+								onClick={logout}
+							>
+								Log Out
+							</button>
+						)}
           </nav>
 
           {/* Mobile Menu Button */}

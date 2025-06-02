@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { FaPlay, FaInstagram, FaTwitter, FaTiktok } from 'react-icons/fa';
+import { FaPlay, FaInstagram, FaArrowRight, FaTwitter, FaTiktok } from 'react-icons/fa';
 import youngjonnfeatured from "../assets/artists/youngjonnfeatured.png"
 import rayonafeatured from "../assets/artists/rayonnafeatured.png"
 import heroVideo from "../assets/label-showreel.mp4"
+import useBlogStore from '../store/useBlogStore';
 
 
 
@@ -29,14 +30,15 @@ const featuredArtists = [
 export default function Homepage() {
   // const [blogPosts, setBlogPosts] = useState([]);
   // const [loadingBlogs, setLoadingBlogs] = useState(true);
+  // const { postsList, loading, error, fetchPosts } = useBlogStore();
+  
 
   // useEffect(() => {
   //   // Fetch blog posts from your backend
   //   const fetchBlogPosts = async () => {
   //     try {
-  //       const response = await fetch('/api/blog-posts?limit=3');
-  //       const data = await response.json();
-  //       setBlogPosts(data);
+  //       const res = await fetchPosts()
+  //       setBlogPosts(res);
   //     } catch (error) {
   //       console.error("Error fetching blog posts:", error);
   //     } finally {
@@ -155,7 +157,7 @@ export default function Homepage() {
             ))}
           </div>
         )}
-      </section> */}
+      </section>  */}
 
 
 

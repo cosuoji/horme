@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './Layout/Header';
 import Homepage from './Pages/Homepage';
@@ -20,9 +20,21 @@ import Signup from './Pages/Signup';
 import SinglePost from './Pages/BlogPages/SinglePost';
 import BlogLayout from './Layout/BlogLayout';
 import CreatePost from './Pages/BlogPages/CreatePost';
+import { useUserStore } from './store/useUserStore';
+import AdminRoute from './Components/AdminRoute';
+import { Toaster } from 'react-hot-toast';
 
 
 const App = () => {
+
+  const { user, checkAuth, checkingAuth } = useUserStore();
+
+  useEffect(() => {
+		checkAuth();
+	}, [checkAuth]);
+
+	// if (checkingAuth) return <Loading />;
+
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
@@ -42,25 +54,32 @@ const App = () => {
               <Route path="radio" element={<Radio />} />
               <Route path="label-services" element={<Label />} />
             </Route>
-            <Route path="/blog" element={<BlogLayout />}>
+            {/* <Route path="/blog" element={<BlogLayout />}>
               <Route index element={<Blog />} />
               <Route path=":id-:slug" element={<SinglePost />} /> 
-              <Route path=":id" element={<SinglePost />} /> {/* Fallback for old URLs */}  
-              <Route path="write" element={<CreatePost />} /> 
-            </Route>
+              <Route path=":id" element={<SinglePost />} /> 
+              <Route path="write" 
+              element={
+                <AdminRoute>
+                   <CreatePost />
+                </AdminRoute>
+              } /> 
+            </Route> */}
 
             <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            {/* <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+            <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} /> */}
                     {/* Catch-all route */}
-           {/* <Route path="*" element={<Navigate to={"/"} />} /> */}
+            <Route path="*" element={<Navigate to={"/"} />} /> 
           </Routes>
           </Layout>
         </main>
       <Footer />
+      <Toaster />
       </div>
-
+    
     </Router>
+    
   );
 };
 

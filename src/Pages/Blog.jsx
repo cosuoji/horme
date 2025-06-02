@@ -1,39 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import PageTransition from '../Components/PageTransition';
 import MainCategories from '../Components/MainCategories';
-import blogPosts from '../utils/blogposts';
 import { Link, useLocation, useNavigate} from 'react-router-dom';
 import blogCategories from '../utils/blogCategories';
 import useBlogStore from '../store/useBlogStore';
+import { formatKebabToTitle } from '../utils/helpers';
+
 
 
 const Blog = () => {
  
   const location = useLocation();
-  const [results, setResults] = useState("")
-  const [filteredPosts, setFilteredPosts] = useState(blogPosts);
+  const { postsList, loading, error, fetchPosts } = useBlogStore();
+  const [filteredPosts, setFilteredPosts] = useState([]);
   const navigate = useNavigate();
-  //const { posts, loading, error, fetchPosts } = useBlogStore();
 
 
-  // useEffect(() => {
-  //   if (posts.length === 0) {
-  //     fetchPosts();
-  //   }
-  // }, [fetchPosts, posts.length]);
+  useEffect(() => {
+    // Check for navigation state indicating refresh
+    if (location.state?.refreshed) {
+      fetchPosts(); // Force a fresh fetch
+      // Clear the state to prevent infinite loops
+      navigate(location.pathname, { replace: true, state: {} });
+    } else if (postsList.length === 0) {
+      fetchPosts(); // Initial load
+    }
+  }, [fetchPosts, location.state, navigate, postsList.length]);
     // Get active category from URL
     useEffect(() => {
       const params = new URLSearchParams(location.search);
       const activeCategory = params.get('category') || 'all';
       const searchQuery = params.get('search')?.toLowerCase().trim() || '';
     
-      let posts = [...blogPosts];
+      let posts = [...postsList]; // Use postsList from store
     
-      // Filter by category
       if (activeCategory !== 'all') {
-        posts = posts.filter(post => post.categorySlug === activeCategory);      }
+        posts = posts.filter(post => post.categorySlug === activeCategory);
+      }
     
-      // Filter by search term
       if (searchQuery) {
         posts = posts.filter(post =>
           post.title.toLowerCase().includes(searchQuery) ||
@@ -41,9 +45,9 @@ const Blog = () => {
           post.excerpt.toLowerCase().includes(searchQuery)
         );
       }
-      
+    
       setFilteredPosts(posts);
-    }, [location.search]);
+    }, [location.search, postsList]); // Add postsList to dependencies
     
 
     return (
@@ -75,14 +79,14 @@ const Blog = () => {
             {filteredPosts.length > 0 ? (
               filteredPosts.map((post) => (
                  <Link 
-        to={`/blog/${post.id}-${post.titleSlug}`} // This creates the link to the single post page
-        key={post.id}
+        to={`/blog/${post._id}-${post.titleSlug}`} // This creates the link to the single post page
+        key={post._id}
         className="group relative overflow-hidden rounded-lg transition-all duration-300 hover:scale-[1.02] block" // Added 'block' class
       >
                   {/* Cover Image */}
                   <div className="h-48 overflow-hidden">
                     <img 
-                      src={post.coverImage} 
+                      src={`https://ik.imagekit.io/hormemusic/${post.coverImage}`} 
                       alt={post.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -97,12 +101,14 @@ const Blog = () => {
                     
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-[#EAE4D5] bg-[#2a2a2a] px-2 py-1 rounded">
-                        {blogCategories.find(cat => cat.categoryslug === post.categorySlug)?.name || post.category}
+                        {blogCategories.find(cat => cat.categoryslug === post.categorySlug)?.name || formatKebabToTitle(post.category)}
                       </span>
                       <span className="text-sm text-[#B6B09F]/80">
                         {post.date}
                       </span>
                     </div>
+
+                    
                     
                     <h3 className="text-xl font-semibold text-[#EAE4D5] mb-2 group-hover:text-[#f0ece1] transition-colors duration-300">
                       {post.title}
