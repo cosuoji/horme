@@ -8,8 +8,9 @@ import onlyfans from "../assets/influencercampaigns/onlyfans.png";
 import craze from "../assets/radio/radiocampaigns/craze.png";
 import shaolin from "../assets/shaolin.png";
 import megamoney from "../assets/radio/radiocampaigns/megamoney.png";
-import mreazi from "../assets/mreazi.png";
+import earlymomo from "../assets/earlymomo.png";
 import whogopay from "../assets/influencercampaigns/whogopay.png";
+import cheche from "../assets/cheche.png"
 
 const featuredArtists = [
   {
@@ -17,7 +18,7 @@ const featuredArtists = [
     name: "Young Jonn",
     image: youngjonnfeatured,
     genre: "Afrobeats",
-    latestTrack: "Only Fans"
+    latestTrack: "Che Che ft. Asake"
   },
   {
     id: "rayona",
@@ -29,12 +30,13 @@ const featuredArtists = [
 ];
 
 const clients = [
-  { id: 1, name: "Rayonna", logo: craze },
-  { id: 2, name: "Young Jonn", logo: onlyfans },
-  { id: 3, name: "Seyi Vibez", logo: shaolin },
-  { id: 4, name: "Tiwa Savage", logo: megamoney },
-  { id: 5, name: "Mr Eazi", logo: mreazi },
-  { id: 6, name: "Falz", logo: whogopay },
+  {  name: "Rayonna - Craze", logo: craze },
+  { name: "Young Jonn - Only Fans", logo: onlyfans },
+  { name: "Seyi Vibez - Shaolin", logo: shaolin },
+  { name: "Tiwa Savage - Mega Money Mega", logo: megamoney },
+  { name: "Falz - Who Go Pay", logo: whogopay },
+  { name: "Young Jonn - Che Che", logo: cheche },
+  { name: "Spy Shitta - Early Momo", logo: earlymomo }
 ];
 
 export default function Homepage() {
@@ -144,7 +146,7 @@ export default function Homepage() {
             <div className="relative h-[400px] md:h-[500px] lg:h-[600px] w-full overflow-hidden rounded-xl">
               {clients.map((client, index) => (
                 <div
-                  key={client.id}
+                  key={index}
                   className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 >
                   <div className="absolute inset-0 bg-black/30 z-10"></div>

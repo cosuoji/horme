@@ -8,6 +8,7 @@ import onlyfansv from "../assets/artists/youngjonnmusic/onlyfansv.png"
 import tentimes from "../assets/artists/youngjonnmusic/tentimes.png"
 import soonervis from "../assets/artists/youngjonnmusic/soonervis.png"
 import onlyfansofficial from "../assets/artists/youngjonnmusic/onlyfansofficial.png"
+import cheche from "../assets/cheche.png"
 
 
 const artists = [
@@ -64,14 +65,20 @@ const artists = [
     
     Touted to be his best body of work yet, Jiggy Forever is a valuable addition to his track record. The album boasts of anthems like “Big Big Things'' featuring Seyi Vibes and Kizz Daniel, Aquafina, Sharpally, and Stronger. With a string of hits and a growing global fanbase, Young Jonn continues to redefine the boundaries of Afrobeats.` ,
       tracks: [
+        { 
+          id: 1, 
+          title: "Che Che ft. Asake", 
+          cover: cheche,
+          link: "https://youngjonn.lnk.to/cheche" 
+        },
       { 
-        id: 1, 
+        id: 2, 
         title: "Only Fans", 
         cover: onlyfansaudio,
         link: "https://youngjonn.lnk.to/onlyfans" 
       },
       { 
-        id: 2, 
+        id: 3, 
         title: "Jiggy Forever (Album)", 
         cover: gohard,
         link: "https://youngjonn.lnk.to/jiggyforever" 

@@ -8,6 +8,7 @@ import yabaleft from "../assets/blogs/yabaleft.png"
 import pulse from "../assets/blogs/pulse.png"
 
 
+
 const PrComms = () => {
   const navigate = useNavigate();
 

@@ -11,6 +11,9 @@ import goHard from "../assets/radio/radiocampaigns/gohard.png"
 import megamoney from "../assets/radio/radiocampaigns/megamoney.png"
 import tete from "../assets/radio/radiocampaigns/tete.png"
 import wayo from "../assets/radio/radiocampaigns/wayo.png"
+import cheche from "../assets/cheche.png"
+import earlymomo from "../assets/earlymomo.png"
+
 
 import beat from "../assets/radio/beatfm.png"
 import city from "../assets/radio/city.png"
@@ -33,6 +36,8 @@ const Radio = () => {
 
   // Sample media data — replace with real images and song names
   const campaigns = [
+    { image: earlymomo, song: 'Spy Shitta - Early Momo' },
+    { image: cheche, song: 'Young Jonn - Che Che' },
     { image: tenBottles, song: 'Zlatan - 10 Bottles' },
     { image: bigthings, song: 'Young Jonn x Seyi Vibez x Kizz Daniel - Big Big Things'},
     { image: countmyblessings, song: 'Johnny Drille - Count My Blessings' },

@@ -11,12 +11,15 @@ import kere from "../assets/influencercampaigns/kere.png"
 import whogopay from "../assets/influencercampaigns/whogopay.png"
 import busStop from "../assets/influencercampaigns/busstop.png"
 import busStopRmx from "../assets/influencercampaigns/busstoprmx.png"
+import cheche from "../assets/cheche.png"
+
 
 const InfluencerMarketing = () => {
   const navigate = useNavigate();
 
   // Sample media data — replace with real images and song names
   const campaigns = [
+    {image: cheche, song: "Young Jonn - Che Che"},
     { image: onlyfans, song: 'Young Jonn - Only Fans' },
     { image: tentimes, song: 'Young Jonn - Ten Times' },
     { image: emekaDance, song: 'Blaqbonez - Louder' },
@@ -60,7 +63,7 @@ const InfluencerMarketing = () => {
 
         {/* Campaign Media Grid */}
         <div>
-          <h3 className="text-3xl font-bold text-[#EAE4D5] mb-10"> Marketing Campaigns</h3>
+          <h3 className="text-3xl font-bold text-[#EAE4D5] mb-10">Influencer Marketing Campaigns</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {campaigns.map((item, index) => (
               <div 

@@ -9,12 +9,14 @@ import bigthings from "../assets/clubcampaigns/bigthings.png"
 import emekaDance from "../assets/clubcampaigns/emekadance.png"
 import manuever from "../assets/clubcampaigns/maneuver.png"
 import jigga from "../assets/clubcampaigns/jigga.png"
+import cheche from "../assets/cheche.png"
 
 const Clubs = () => {
   const navigate = useNavigate();
 
   // Sample media data — replace with real images and song names
   const campaigns = [
+    {image: cheche, song: "Young Jonn - Che Che"},
     { image: tenBottles, song: 'Zlatan - 10 Bottles' },
     { image: bustDown, song: 'Zlatan ft. Asaka - Bust Down' },
     { image: goHard, song: 'Young Jonn - Go Hard' },
