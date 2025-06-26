@@ -11,6 +11,8 @@ import megamoney from "../assets/radio/radiocampaigns/megamoney.png";
 import earlymomo from "../assets/earlymomo.png";
 import whogopay from "../assets/influencercampaigns/whogopay.png";
 import cheche from "../assets/cheche.png"
+import { Helmet } from 'react-helmet';
+import testimony from "../assets/testimony.png"
 
 const featuredArtists = [
   {
@@ -25,7 +27,7 @@ const featuredArtists = [
     name: "Rayona",
     image: rayonafeatured,
     genre: "Afropop",
-    latestTrack: "Craze"
+    latestTrack: "Testimony"
   }
 ];
 
@@ -36,7 +38,8 @@ const clients = [
   { name: "Tiwa Savage - Mega Money Mega", logo: megamoney },
   { name: "Falz - Who Go Pay", logo: whogopay },
   { name: "Young Jonn - Che Che", logo: cheche },
-  { name: "Spy Shitta - Early Momo", logo: earlymomo }
+  { name: "Spy Shitta - Early Momo", logo: earlymomo },
+  { name: "Rayona - Testimony", logo: testimony }
 ];
 
 export default function Homepage() {
@@ -65,6 +68,9 @@ export default function Homepage() {
 
   return (
     <div className="bg-[#0a0a0a] text-[#B6B09F]">
+    <Helmet>
+      <title>Home Page - Horme Music WorldWide</title>
+    </Helmet>
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-black/50 z-10" />

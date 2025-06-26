@@ -6,6 +6,8 @@ import wahala from "../assets/blogs/wahala.jpg"
 import kraks from "../assets/blogs/kraks.png"
 import yabaleft from "../assets/blogs/yabaleft.png"
 import pulse from "../assets/blogs/pulse.png"
+import { Helmet } from "react-helmet"
+
 
 
 
@@ -24,7 +26,9 @@ const PrComms = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-[#0a0a0a] text-[#B6B09F] px-6 md:px-20 py-20 space-y-14 animate-fadeUp">
-
+      <Helmet>
+          <title>PR & Comms | Horme Music Worldwide</title>
+        </Helmet>
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}

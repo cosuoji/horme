@@ -1,10 +1,13 @@
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useForm, ValidationError } from '@formspree/react';
 import ContactForm from "../Components/ContactForm";
-
+import { Helmet } from "react-helmet";
 export default function Contact() {
   return (
     <div className="p-6 md:p-12 text-[#B6B09F]">
+        <Helmet>
+        <title>Contact Us | Horme Music Worldwide</title>
+      </Helmet>
     {/* Updated Contact Us heading to match About Us styling */}
     <div className="flex flex-col items-center justify-center mb-12">
       <h1 className="text-[#B6B09F] hover:text-[#EAE4D5] text-5xl md:text-6xl lg:text-7xl font-bold mb-6 transition duration-300">

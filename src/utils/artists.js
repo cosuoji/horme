@@ -9,6 +9,7 @@ import tentimes from "../assets/artists/youngjonnmusic/tentimes.png"
 import soonervis from "../assets/artists/youngjonnmusic/soonervis.png"
 import onlyfansofficial from "../assets/artists/youngjonnmusic/onlyfansofficial.png"
 import cheche from "../assets/cheche.png"
+import testimony from "../assets/testimony.png"
 
 
 const artists = [
@@ -28,6 +29,12 @@ const artists = [
         title: "Craze", 
         cover: craze,
         link: "https://rayona.fanlink.tv/craze" 
+      },
+      { 
+        id: 2, 
+        title: "Testimony", 
+        cover: testimony,
+        link: "https://rayona.lnk.to/Testimony" 
       },
     ],
     videos: [

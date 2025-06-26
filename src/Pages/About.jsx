@@ -7,7 +7,7 @@ import imageFive from "../assets/image5.jpg";
 import imageSix from "../assets/image6.jpg";
 import imageSeven from "../assets/image7.jpg";
 import imageEight from "../assets/image8.jpg";
-
+import { Helmet } from 'react-helmet';
 const About = () => {
   const [hoveredImage, setHoveredImage] = useState(null);
 
@@ -73,6 +73,9 @@ const About = () => {
 
   return (
     <div className="relative min-h-[80vh] w-full overflow-hidden bg-[#0a0a0a]">
+      <Helmet>
+        <title>About Us | Horme Music Worldwide</title>
+      </Helmet>
       {/* 8 Background images with tighter spacing */}
       {backgroundImages.map((image) => (
         <div

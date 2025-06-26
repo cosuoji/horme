@@ -12,6 +12,9 @@ import whogopay from "../assets/influencercampaigns/whogopay.png"
 import busStop from "../assets/influencercampaigns/busstop.png"
 import busStopRmx from "../assets/influencercampaigns/busstoprmx.png"
 import cheche from "../assets/cheche.png"
+import { Helmet } from "react-helmet"
+import testimony from "../assets/testimony.png"
+
 
 
 const InfluencerMarketing = () => {
@@ -30,12 +33,15 @@ const InfluencerMarketing = () => {
     { image: emekaDance, song: 'Blaqbonez - Emeka Dance' },
     { image: faceCard, song: 'Noon Dave - Face Card' }, 
     { image: whogopay, song: 'Falz x Adekunle Gold - Who Go Pay' },
+    { image: testimony, song: 'Rayona - Testimony' },
   ];
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-[#0a0a0a] text-[#B6B09F] px-6 md:px-20 py-20 space-y-14 animate-fadeUp">
-
+       <Helmet>
+          <title>Influencer Marketing | Horme Music Worldwide</title>
+        </Helmet>
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}

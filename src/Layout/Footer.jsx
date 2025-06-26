@@ -40,7 +40,7 @@ const Footer = () => {
         {/* Copyright - Centered */}
         <div className="mt-8 pt-6 border-t border-gray-200">
           <div className="container mx-auto px-4 text-center text-[#B6B09F] hover:text-[#EAE4D5]" >
-            © {new Date().getFullYear()} Horme Music. All rights reserved.
+            © {new Date().getFullYear()} Horme Music Worldwide. All rights reserved.
           </div>
         </div>
       </div>

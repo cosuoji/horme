@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import PageTransition from '../Components/PageTransition';
 import rayonna from "../assets/artists/rayona.png"
 import youngJonn from "../assets/artists/youngjonn.png"
+import { Helmet } from 'react-helmet';
 
 
 const Label = () => {
@@ -21,7 +22,9 @@ const Label = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-[#0a0a0a] text-[#B6B09F] px-6 md:px-20 py-20 space-y-14 animate-fadeUp">
-
+      <Helmet>
+        <title>Label | Horme Music Worldwide</title>
+      </Helmet>
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}

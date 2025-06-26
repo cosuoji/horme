@@ -24,19 +24,19 @@ import soundcity from "../assets/radio/soundcity.webp"
 import ufm from "../assets/radio/ufm.png"
 import vybz from "../assets/radio/vybz.png"
 import wazobia from "../assets/radio/wazobia.webp"
+import testimony from "../assets/testimony.png"
 
 
-
-
+import { Helmet } from 'react-helmet';
 
 
 
 const Radio = () => {
   const navigate = useNavigate();
-
   // Sample media data — replace with real images and song names
   const campaigns = [
     { image: earlymomo, song: 'Spy Shitta - Early Momo' },
+    { image: testimony, song: 'Rayona - Testimony' },
     { image: cheche, song: 'Young Jonn - Che Che' },
     { image: tenBottles, song: 'Zlatan - 10 Bottles' },
     { image: bigthings, song: 'Young Jonn x Seyi Vibez x Kizz Daniel - Big Big Things'},
@@ -67,7 +67,9 @@ const Radio = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-[#0a0a0a] text-[#B6B09F] px-6 md:px-20 py-20 space-y-14 animate-fadeUp">
-
+      <Helmet>
+        <title>Radio Campaign | Horme Music Worldwide</title>
+      </Helmet>
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}

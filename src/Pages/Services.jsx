@@ -6,6 +6,7 @@ import influencerBg from '../assets/influencer-bg.jpg';
 import prBg from '../assets/pr-bg.jpg';
 import radioBg from '../assets/radio-bg.jpg';
 import labelBg from "../assets/image4.jpg"
+import { Helmet } from 'react-helmet';
 
 const Services = () => {
   const serviceCards = [
@@ -43,6 +44,9 @@ const Services = () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-[#B6B09F]">
+      <Helmet>
+        <title>Our Services | Horme Music Worldwide</title>
+      </Helmet>
       {/* Header Section */}
       <div className="px-6 md:px-20 py-20">
         <h1 className="text-[#B6B09F] hover:text-[#EAE4D5] text-5xl md:text-6xl lg:text-7xl font-bold mb-6 transition duration-300 text-left">

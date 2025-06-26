@@ -10,6 +10,7 @@ import emekaDance from "../assets/clubcampaigns/emekadance.png"
 import manuever from "../assets/clubcampaigns/maneuver.png"
 import jigga from "../assets/clubcampaigns/jigga.png"
 import cheche from "../assets/cheche.png"
+import { Helmet } from 'react-helmet';
 
 const Clubs = () => {
   const navigate = useNavigate();
@@ -29,7 +30,9 @@ const Clubs = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-[#0a0a0a] text-[#B6B09F] px-6 md:px-20 py-20 space-y-14 animate-fadeUp">
-
+        <Helmet>
+          <title>Club Campaign | Horme Music Worldwide</title>
+        </Helmet>
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
