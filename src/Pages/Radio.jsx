@@ -25,6 +25,8 @@ import ufm from "../assets/radio/ufm.png"
 import vybz from "../assets/radio/vybz.png"
 import wazobia from "../assets/radio/wazobia.webp"
 import testimony from "../assets/testimony.png"
+import cashflow from "../assets/cashflow.jpeg"
+
 
 
 import { Helmet } from 'react-helmet';
@@ -35,6 +37,7 @@ const Radio = () => {
   const navigate = useNavigate();
   // Sample media data — replace with real images and song names
   const campaigns = [
+    { image: cashflow, song: 'Young Jonn - Cash Flow' },
     { image: earlymomo, song: 'Spy Shitta - Early Momo' },
     { image: testimony, song: 'Rayona - Testimony' },
     { image: cheche, song: 'Young Jonn - Che Che' },

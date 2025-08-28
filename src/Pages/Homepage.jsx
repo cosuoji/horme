@@ -11,6 +11,7 @@ import megamoney from "../assets/radio/radiocampaigns/megamoney.png";
 import earlymomo from "../assets/earlymomo.png";
 import whogopay from "../assets/influencercampaigns/whogopay.png";
 import cheche from "../assets/cheche.png"
+import cashflow from "../assets/cashflow.jpeg"
 import { Helmet } from 'react-helmet';
 import testimony from "../assets/testimony.png"
 
@@ -20,7 +21,7 @@ const featuredArtists = [
     name: "Young Jonn",
     image: youngjonnfeatured,
     genre: "Afrobeats",
-    latestTrack: "Che Che ft. Asake"
+    latestTrack: "Cash Flow ft. Wizkid"
   },
   {
     id: "rayona",
@@ -31,7 +32,10 @@ const featuredArtists = [
   }
 ];
 
+
+
 const clients = [
+  {  name: "Young Jonn - Cash Flow", logo: cashflow },
   {  name: "Rayonna - Craze", logo: craze },
   { name: "Young Jonn - Only Fans", logo: onlyfans },
   { name: "Seyi Vibez - Shaolin", logo: shaolin },

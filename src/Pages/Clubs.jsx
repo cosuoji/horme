@@ -11,6 +11,8 @@ import manuever from "../assets/clubcampaigns/maneuver.png"
 import jigga from "../assets/clubcampaigns/jigga.png"
 import cheche from "../assets/cheche.png"
 import { Helmet } from 'react-helmet';
+import cashflow from "../assets/cashflow.jpeg"
+
 
 const Clubs = () => {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const Clubs = () => {
   // Sample media data — replace with real images and song names
   const campaigns = [
     {image: cheche, song: "Young Jonn - Che Che"},
+    {image: cashflow, song: "Young Jonn - Cash Flow"},
     { image: tenBottles, song: 'Zlatan - 10 Bottles' },
     { image: bustDown, song: 'Zlatan ft. Asaka - Bust Down' },
     { image: goHard, song: 'Young Jonn - Go Hard' },

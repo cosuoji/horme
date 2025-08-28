@@ -54,8 +54,6 @@ const ArtistPage = () => {
           </div>
         );
       }
-
-      console.log(artist.videos)
     
 
   return (
@@ -137,7 +135,7 @@ const ArtistPage = () => {
                 {track.title}
               </h3>
             </a>
-          ))}
+          )).reverse()}
         </div>
       </div>
 
