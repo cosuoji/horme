@@ -5,7 +5,7 @@ import PageTransition from '../Components/PageTransition';
 import onlyfans from "../assets/influencercampaigns/onlyfans.png"
 import tentimes from "../assets/influencercampaigns/tentimes.png"
 import goHard from "../assets/influencercampaigns/gohard.png"
-import faceCard from "../assets/influencercampaigns/faceCard.png"
+import faceCard from "../assets/influencercampaigns/facecard.png"
 import emekaDance from "../assets/influencercampaigns/emekadance.png"
 import kere from "../assets/influencercampaigns/kere.png"
 import whogopay from "../assets/influencercampaigns/whogopay.png"
