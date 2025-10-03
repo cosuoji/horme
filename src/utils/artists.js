@@ -11,6 +11,7 @@ import onlyfansofficial from "../assets/artists/youngjonnmusic/onlyfansofficial.
 import cheche from "../assets/cheche.png"
 import testimony from "../assets/testimony.png"
 import cashflow from "../assets/cashflow.jpeg"
+import rayofsunshine from "../assets/rayofsunshine.png"
 
 
 
@@ -37,6 +38,12 @@ const artists = [
         title: "Testimony", 
         cover: testimony,
         link: "https://rayona.lnk.to/Testimony" 
+      },
+      { 
+        id: 3, 
+        title: "Ray of Sunshine (EP)", 
+        cover: rayofsunshine,
+        link: "https://fanlink.tv/Rayofsunshine" 
       },
     ],
     videos: [

@@ -14,6 +14,7 @@ import cheche from "../assets/cheche.png"
 import cashflow from "../assets/cashflow.jpeg"
 import { Helmet } from 'react-helmet';
 import testimony from "../assets/testimony.png"
+import rayofsunshine from "../assets/rayofsunshine.png"
 
 const featuredArtists = [
   {
@@ -28,7 +29,7 @@ const featuredArtists = [
     name: "Rayona",
     image: rayonafeatured,
     genre: "Afropop",
-    latestTrack: "Testimony"
+    latestTrack: "Beauty"
   }
 ];
 
@@ -43,7 +44,8 @@ const clients = [
   { name: "Falz - Who Go Pay", logo: whogopay },
   { name: "Young Jonn - Che Che", logo: cheche },
   { name: "Spy Shitta - Early Momo", logo: earlymomo },
-  { name: "Rayona - Testimony", logo: testimony }
+  { name: "Rayona - Testimony", logo: testimony },
+  { name: "Rayona - Ray Of Sunshine (EP) ", logo: rayofsunshine }
 ];
 
 export default function Homepage() {
