@@ -16,7 +16,7 @@ const Label = () => {
   ];
 
   const management = [
-    { id:"youngjonn", image: youngJonn, name: 'Young Jonn' },
+   // { id:"youngjonn", image: youngJonn, name: 'Young Jonn' },
   ];
 
   return (
