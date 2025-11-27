@@ -17,13 +17,13 @@ import testimony from "../assets/testimony.png"
 import rayofsunshine from "../assets/rayofsunshine.png"
 
 const featuredArtists = [
-  {
-    id: "youngjonn",
-    name: "Young Jonn",
-    image: youngjonnfeatured,
-    genre: "Afrobeats",
-    latestTrack: "Cash Flow ft. Wizkid"
-  },
+  // {
+  //   id: "youngjonn",
+  //   name: "Young Jonn",
+  //   image: youngjonnfeatured,
+  //   genre: "Afrobeats",
+  //   latestTrack: "Cash Flow ft. Wizkid"
+  // },
   {
     id: "rayona",
     name: "Rayona",
