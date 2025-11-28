@@ -15,6 +15,7 @@ import cashflow from "../assets/cashflow.jpeg"
 import { Helmet } from 'react-helmet';
 import testimony from "../assets/testimony.png"
 import rayofsunshine from "../assets/rayofsunshine.png"
+import afroculture from "../assets/afroculture.png"
 
 const featuredArtists = [
   // {
@@ -45,7 +46,9 @@ const clients = [
   { name: "Young Jonn - Che Che", logo: cheche },
   { name: "Spy Shitta - Early Momo", logo: earlymomo },
   { name: "Rayona - Testimony", logo: testimony },
-  { name: "Rayona - Ray Of Sunshine (EP) ", logo: rayofsunshine }
+  { name: "Rayona - Ray Of Sunshine (EP) ", logo: rayofsunshine },
+    { name: "Flavour - Afroculture (EP) ", logo: afroculture }
+
 ];
 
 export default function Homepage() {

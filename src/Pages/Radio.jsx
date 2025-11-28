@@ -26,6 +26,7 @@ import vybz from "../assets/radio/vybz.png"
 import wazobia from "../assets/radio/wazobia.webp"
 import testimony from "../assets/testimony.png"
 import cashflow from "../assets/cashflow.jpeg"
+import afroculture from "../assets/afroculture.png"
 
 
 
@@ -37,6 +38,7 @@ const Radio = () => {
   const navigate = useNavigate();
   // Sample media data — replace with real images and song names
   const campaigns = [
+    { image: afroculture, song: 'Flavour - Eagle Has Landed' },
     { image: cashflow, song: 'Young Jonn - Cash Flow' },
     { image: earlymomo, song: 'Spy Shitta - Early Momo' },
     { image: testimony, song: 'Rayona - Testimony' },
