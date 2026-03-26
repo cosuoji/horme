@@ -15,7 +15,7 @@
     "autoprefixer": "^10.4.21",
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
-    "framer-motion": "^12.15.0",
+    "framer-motion": "^12.38.0",
     "imagekitio-react": "^4.3.0",
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",

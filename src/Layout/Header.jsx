@@ -42,15 +42,15 @@ const Header = () => {
               </Link>
             ))}
 
-            {user && (
-							<button
-								className='text-[#B6B09F] hover:text-[#EAE4D5] 
-						rounded-md flex items-center transition duration-300 ease-in-out'
-								onClick={logout}
-							>
-								Log Out
-							</button>
-						)}
+            {/* {user && (
+						// 	<button
+						// 		className='text-[#B6B09F] hover:text-[#EAE4D5]
+						// rounded-md flex items-center transition duration-300 ease-in-out'
+						// 		onClick={logout}
+						// 	>
+						// 		Log Out
+						// 	</button>
+						)}*/}
           </nav>
 
           {/* Mobile Menu Button */}
