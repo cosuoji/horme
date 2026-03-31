@@ -112,18 +112,20 @@ export const useUserStore = create((set, get) => ({
   },
   // Inside useUserStore.js
   login: async (email, password) => {
-    set({ loading: true });
+    set({ loading: true, error: null }); // Reset error and start loading
     try {
-      const res = await axios.post("/api/auth/login", { email, password });
+      const res = await axios.post("/api/auth/login", {
+        email,
+        password,
+      });
       set({ user: res.data, loading: false });
       return true;
     } catch (error) {
-      // 🚀 CRITICAL: Reset loading even if the password is wrong!
-      set({
-        loading: false,
-        error: error.response?.data?.message || "Login failed",
-      });
+      const message = error.response?.data?.message || "Login failed";
+      set({ error: message, loading: false }); // 🚀 THIS MUST RUN
       return false;
+    } finally {
+      set({ loading: false }); // 🛡️ DOUBLE SAFETY: Always stops the spinner
     }
   },
 
@@ -174,28 +176,37 @@ axios.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+
+    // 🚀 NEW: Don't try to refresh if the error happened during Login or Refreshing itself
+    const isAuthRequest =
+      originalRequest.url.includes("api/auth/login") ||
+      originalRequest.url.includes("api/auth/refresh-token");
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRequest
+    ) {
       originalRequest._retry = true;
 
       try {
-        // If a refresh is already in progress, wait for it to complete
         if (refreshPromise) {
           await refreshPromise;
           return axios(originalRequest);
         }
 
-        // Start a new refresh process
         refreshPromise = useUserStore.getState().refreshToken();
         await refreshPromise;
         refreshPromise = null;
 
         return axios(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login or handle as needed
         useUserStore.getState().logout();
         return Promise.reject(refreshError);
       }
     }
+
+    // 🚀 CRITICAL: If it's a login 401, just reject it so the 'catch' in login() runs!
     return Promise.reject(error);
   },
 );

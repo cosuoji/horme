@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUserStore } from "../store/useUserStore";
 import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,9 +19,8 @@ const Login = () => {
     if (success) {
       navigate("/dashboard");
     } else {
-      // If we get here, the loading state should already be false
       // thanks to the catch block in your Zustand store (see below).
-      console.error("Login failed");
+      toast.error("Login failed");
     }
   };
   return (
