@@ -11,10 +11,18 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // The 'login' function needs to return true/false
+    // AND reset the loading state internally.
     const success = await login(email, password);
-    if (success) navigate("/dashboard");
-  };
 
+    if (success) {
+      navigate("/dashboard");
+    } else {
+      // If we get here, the loading state should already be false
+      // thanks to the catch block in your Zustand store (see below).
+      console.error("Login failed");
+    }
+  };
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-[#0a0a0a] px-4">
       <motion.div

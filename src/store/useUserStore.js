@@ -110,17 +110,19 @@ export const useUserStore = create((set, get) => ({
       return false;
     }
   },
+  // Inside useUserStore.js
   login: async (email, password) => {
     set({ loading: true });
-
     try {
-      const res = await axios.post("api/auth/login", { email, password });
-
+      const res = await axios.post("/api/auth/login", { email, password });
       set({ user: res.data, loading: false });
       return true;
     } catch (error) {
-      set({ loading: false });
-      toast.error(error.response?.data?.message || "Login failed");
+      // 🚀 CRITICAL: Reset loading even if the password is wrong!
+      set({
+        loading: false,
+        error: error.response?.data?.message || "Login failed",
+      });
       return false;
     }
   },
