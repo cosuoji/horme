@@ -1,0 +1,72 @@
+// server.js
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
+
+//Routes
+import authRoutes from "./routes/authRoutes.js";
+import royaltyRoutes from "./routes/royaltyRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import scoutRoutes from "./routes/scoutRoutes.js";
+import releaseRoutes from "./routes/releaseRoutes.js";
+
+//Error Middleware
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+
+const app = express();
+
+// --- Global Middleware ---
+app.use(helmet());
+app.use(express.json());
+app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  }),
+);
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests from this IP, please try again later.",
+});
+app.use("/api/", limiter);
+
+// --- Database Connection ---
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Connected to Horme OS Database"))
+  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+
+// --- Basic Route ---
+app.get("/health", (req, res) => {
+  res
+    .status(200)
+    .json({ status: "active", message: "Horme OS Engine Running" });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/royalties", royaltyRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/scouts", scoutRoutes);
+app.use("/api/releases", releaseRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

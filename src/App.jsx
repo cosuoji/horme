@@ -1,85 +1,132 @@
-import { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './Layout/Header';
-import Homepage from './Pages/Homepage';
-import About from './Pages/About';
-import Services from './Pages/Services';
-import Blog from './Pages/Blog';
-import Contact from './Pages/Contact';
-import './App.css'
-import Footer from './Layout/Footer';
-import Clubs from './Pages/Clubs';
-import InfluencerMarketing from './Pages/InfluencerMarketing';
-import PrComms from './Pages/PrComms';
-import Radio from './Pages/Radio';
-import Label from './Pages/Label';
-import Layout from './Components/Layout';
-import ArtistPage from './Components/ArtistPage';
-import Login from './Pages/Login';
-import Signup from './Pages/Signup';
-import SinglePost from './Pages/BlogPages/SinglePost';
-import BlogLayout from './Layout/BlogLayout';
-import CreatePost from './Pages/BlogPages/CreatePost';
-import { useUserStore } from './store/useUserStore';
-import AdminRoute from './Components/AdminRoute';
-import { Toaster } from 'react-hot-toast';
+import { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation, // 👈 Added useLocation here
+} from "react-router-dom";
+import Header from "./Layout/Header";
+import Homepage from "./Pages/Homepage";
+import About from "./Pages/About";
+import Services from "./Pages/Services";
+import Contact from "./Pages/Contact";
+import "./App.css";
+import Footer from "./Layout/Footer";
+import Clubs from "./Pages/Clubs";
+import InfluencerMarketing from "./Pages/InfluencerMarketing";
+import PrComms from "./Pages/PrComms";
+import Radio from "./Pages/Radio";
+import Label from "./Pages/Label";
+import Layout from "./Components/Layout";
+import ArtistPage from "./Components/ArtistPage";
+import Login from "./Pages/Login";
+import Signup from "./Pages/Signup";
+import VerifyEmail from "./Pages/VerifyEmail";
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 
+import { useUserStore } from "./store/useUserStore";
 
-const App = () => {
+import ProtectedRoute from "./Components/ProtectedRoute";
 
-  const { user, checkAuth, checkingAuth } = useUserStore();
+// Dashboard routes
+import DashboardLayout from "./Layout/DashboardLayout";
+import SettingsPage from "./Pages/Dashboard/SettingsPage";
+import DashboardOverview from "./Pages/Dashboard/DashboardOverview";
+import WalletPage from "./Pages/Dashboard/WalletPage";
+import ReleasesPage from "./Pages/Dashboard/ReleasesPage";
+import ArtistProfileForm from "./Pages/Dashboard/ArtistProfileForm";
+import NewReleaseBuilder from "./Pages/Dashboard/NewReleaseBuilder";
 
-  useEffect(() => {
-		checkAuth();
-	}, [checkAuth]);
+import { Toaster } from "react-hot-toast";
 
-	// if (checkingAuth) return <Loading />;
+// 1. We create a sub-component to handle the layout logic
+const AppContent = () => {
+  const { user } = useUserStore();
+  const location = useLocation();
+
+  // Check if the current path starts with /dashboard
+  const isDashboard = location.pathname.startsWith("/dashboard");
 
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        
-        <main className="flex-grow">
-          <Layout>
+    <div className="min-h-screen flex flex-col">
+      {/* 2. Only show Header if we are NOT on a dashboard route */}
+      {!isDashboard && <Header />}
+
+      <main className="flex-grow">
+        <Layout>
           <Routes>
-            <Route path="/" element={<Homepage/>} />
+            <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<About />} />
             <Route path="/artists/:id" element={<ArtistPage />} />
             <Route path="/services">
-              <Route index element={<Services />} /> {/* Optional: default child route */}
+              <Route index element={<Services />} />
               <Route path="clubs" element={<Clubs />} />
-              <Route path="influencer-marketing" element={<InfluencerMarketing />} />
-              <Route path="pr-comms" element={<PrComms />} /> {/* Changed from pr&comms */}
+              <Route
+                path="influencer-marketing"
+                element={<InfluencerMarketing />}
+              />
+              <Route path="pr-comms" element={<PrComms />} />
               <Route path="radio" element={<Radio />} />
               <Route path="label-services" element={<Label />} />
             </Route>
-            {/* <Route path="/blog" element={<BlogLayout />}>
-              <Route index element={<Blog />} />
-              <Route path=":id-:slug" element={<SinglePost />} /> 
-              <Route path=":id" element={<SinglePost />} /> 
-              <Route path="write" 
-              element={
-                <AdminRoute>
-                   <CreatePost />
-                </AdminRoute>
-              } /> 
-            </Route> */}
 
             <Route path="/contact" element={<Contact />} />
-            {/* <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-            <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} /> */}
-                    {/* Catch-all route */}
-            <Route path="*" element={<Navigate to={"/"} />} /> 
+            <Route
+              path="/login"
+              element={!user ? <Login /> : <Navigate to="/dashboard" />} // Redirect logged in users to dashboard
+            />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/signup"
+              element={!user ? <Signup /> : <Navigate to="/dashboard" />} // Redirect logged in users to dashboard
+            />
+
+            {/* Artist Portal Routes - Protected */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<DashboardOverview />} />
+              <Route path="profile" element={<ArtistProfileForm />} />
+              <Route path="wallet" element={<WalletPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="releases" element={<ReleasesPage />} />
+              <Route path="releases/new" element={<NewReleaseBuilder />} />
+            </Route>
+
+            {/* Catch-all route at absolute bottom */}
+            <Route path="*" element={<Navigate to={"/"} />} />
           </Routes>
-          </Layout>
-        </main>
-      <Footer />
+        </Layout>
+      </main>
+
+      {/* 3. Only show Footer if we are NOT on a dashboard route */}
+      {!isDashboard && <Footer />}
       <Toaster />
-      </div>
-    
+    </div>
+  );
+};
+
+// 4. App component just wraps everything in the Router
+const App = () => {
+  const { checkAuth } = useUserStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  return (
+    <Router>
+      <AppContent />
     </Router>
-    
   );
 };
 

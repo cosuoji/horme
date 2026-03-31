@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import logo from "../assets/logo.png"
-import { useUserStore } from '../store/useUserStore';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
+import { useUserStore } from "../store/useUserStore";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,12 +11,10 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-
   const navLinks = [
-    { name: 'About', path: '/about' },
-    { name: 'Services', path: '/services' },
-  //  { name: 'Blog', path: '/blog' },
-    { name: 'Contact', path: '/contact' },
+    { name: "About", path: "/about" },
+    { name: "Services", path: "/services" },
+    { name: "Contact", path: "/contact" },
   ];
 
   return (
@@ -54,10 +52,7 @@ const Header = () => {
           </nav>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden focus:outline-none"
-            onClick={toggleMenu}
-          >
+          <button className="md:hidden focus:outline-none" onClick={toggleMenu}>
             <svg
               className="w-6 h-6 text-[#B6B09F] hover:text-[#EAE4D5]"
               fill="none"
