@@ -120,9 +120,9 @@ export const refreshToken = async (req, res) => {
     // Send it back in a secure cookie
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      secure: process.env.NODE_ENV === "production", // Only true on Render
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({ message: "Token refreshed successfully" });
@@ -163,12 +163,10 @@ export const forgotPassword = async (req, res) => {
 
   if (!user) {
     // For security reasons, don't reveal that the user doesn't exist
-    return res
-      .status(200)
-      .json({
-        message:
-          "If that email exists in our system, a reset link has been sent.",
-      });
+    return res.status(200).json({
+      message:
+        "If that email exists in our system, a reset link has been sent.",
+    });
   }
 
   const resetToken = crypto.randomBytes(32).toString("hex");
@@ -182,12 +180,9 @@ export const forgotPassword = async (req, res) => {
     console.error("Forgot password email failed", error);
   }
 
-  res
-    .status(200)
-    .json({
-      message:
-        "If that email exists in our system, a reset link has been sent.",
-    });
+  res.status(200).json({
+    message: "If that email exists in our system, a reset link has been sent.",
+  });
 };
 
 // @desc    Reset Password

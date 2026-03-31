@@ -24,11 +24,6 @@ import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 const app = express();
 app.set("trust proxy", 1);
 
-// --- Global Middleware ---
-app.use(helmet());
-app.use(express.json());
-app.use(cookieParser());
-
 const allowedOrigins = [
   "https://hormemusic.com",
   "https://www.hormemusic.com",
@@ -47,6 +42,16 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  }),
+);
+
+app.use(express.json());
+app.use(cookieParser());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
