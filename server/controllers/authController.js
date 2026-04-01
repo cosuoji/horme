@@ -90,10 +90,10 @@ export const logoutUser = (req, res) => {
 
   res.cookie("jwt", "", {
     httpOnly: true,
-    expires: new Date(0),
-    secure: isProduction,
-    sameSite: isProduction ? "lax" : "strict",
-    domain: isProduction ? ".hormemusic.com" : undefined, // 🚀 Crucial for localhost vs production
+    expires: new Date(0), // Sets expiration to the past to kill it
+    secure: true, // 🚀 MUST be true in production
+    sameSite: "lax", // 🚀 MUST match your login setting
+    domain: isProduction ? ".hormemusic.com" : undefined, // 🚀 MUST match login domain
   });
 
   res.status(200).json({ message: "Logged out successfully" });

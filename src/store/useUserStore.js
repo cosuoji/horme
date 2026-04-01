@@ -93,12 +93,17 @@ export const useUserStore = create((set, get) => ({
   verifyBvn: async (bvnData) => {
     set({ loading: true });
     try {
-      // Send the BVN to the backend
       const res = await axios.post("api/users/verify-bvn", { bvn: bvnData });
 
-      // Update the user state with the new bvnStatus (e.g., 'pending' or 'verified')
       set((state) => ({
-        user: { ...state.user, bvnStatus: res.data.bvnStatus },
+        user: {
+          ...state.user,
+          // Safely update the nested verification object
+          verification: {
+            ...(state.user.verification || {}),
+            status: res.data.verificationStatus,
+          },
+        },
         loading: false,
       }));
 
@@ -106,10 +111,11 @@ export const useUserStore = create((set, get) => ({
       return true;
     } catch (error) {
       set({ loading: false });
-      toast.error(error.response?.data?.message || "BVN verification failed");
+      toast.error(error.response?.data?.message || "Verification failed");
       return false;
     }
   },
+
   // Inside useUserStore.js
   login: async (email, password) => {
     set({ loading: true, error: null }); // Reset error and start loading
@@ -129,14 +135,17 @@ export const useUserStore = create((set, get) => ({
     }
   },
 
-  logout: async () => {
+  logout: async (navigate) => {
+    // 🚀 Accept navigate as an argument
     try {
       await axios.post("api/auth/logout");
       set({ user: null });
+
+      if (navigate) {
+        navigate("/login"); // 🚀 Explicitly force move to login
+      }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "An error occurred during logout",
-      );
+      toast.error(error.response?.data?.message || "An error occurred");
     }
   },
 

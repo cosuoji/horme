@@ -9,7 +9,7 @@ const WalletPage = () => {
   const [bvnValue, setBvnValue] = useState("");
 
   const balance = user?.walletBalance || 0;
-  const isBvnVerified = user?.bvnStatus === "verified";
+  const isVerified = user?.verification?.status === "verified";
 
   const handleBvnSubmit = async () => {
     // Basic frontend validation before hitting the backend
@@ -47,18 +47,18 @@ const WalletPage = () => {
 
           <div className="flex gap-4">
             <button
-              disabled={!isBvnVerified || balance <= 0}
+              disabled={!isVerified || balance <= 0}
               className="flex items-center gap-2 px-6 py-3 bg-[#EAE4D5] text-[#0a0a0a] font-bold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <FaArrowUp /> Withdraw
             </button>
 
-            {!isBvnVerified && (
+            {!isVerified && (
               <button
                 onClick={() => setShowBvnModal(true)}
                 className="flex items-center gap-2 px-6 py-3 border border-[#B6B09F]/40 text-[#EAE4D5] font-bold rounded-lg hover:border-[#EAE4D5] transition-colors"
               >
-                <FaShieldAlt /> Verify BVN
+                <FaShieldAlt /> Verify Identity
               </button>
             )}
           </div>
@@ -73,7 +73,7 @@ const WalletPage = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-[#B6B09F]">Identity Verification</span>
-              {isBvnVerified ? (
+              {isVerified ? (
                 <span className="text-green-400 text-sm font-bold bg-green-500/10 px-2 py-1 rounded">
                   VERIFIED
                 </span>
@@ -89,7 +89,7 @@ const WalletPage = () => {
             </div>
           </div>
 
-          {!isBvnVerified && (
+          {!isVerified && (
             <div className="mt-6 p-4 bg-[#B6B09F]/5 border border-[#B6B09F]/10 rounded-lg text-sm">
               <p className="text-[#B6B09F]">
                 To comply with regulatory requirements in Nigeria, you must link

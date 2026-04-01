@@ -16,18 +16,21 @@ export const verifyBvn = async (req, res) => {
 
   try {
     const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Initialize the verification object if it doesn't exist
+    if (!user.verification) {
+      user.verification = { status: "unverified", method: "none" };
     }
 
-    // 1. Set status to pending while we process
-    user.bvnStatus = "pending";
+    user.verification.status = "pending";
+    user.verification.method = "bvn";
     await user.save();
 
-    // 2. Call Prembly API
+    // Call Prembly API
     const premblyResponse = await axios.post(
       "https://api.prembly.com/verification/bvn",
-      { number: bvn }, // Prembly usually expects "number" for the BVN payload
+      { number: bvn },
       {
         headers: {
           "x-api-key": process.env.PREMBLY_SECRET_KEY,
@@ -39,37 +42,35 @@ export const verifyBvn = async (req, res) => {
 
     const apiData = premblyResponse.data;
 
-    // 3. Evaluate Prembly's response
-    // Prembly usually returns a status of true/false or specific success codes
     if (apiData.status === true || apiData.response_code === "00") {
       const bvnFirstName = apiData.data.firstName?.toLowerCase() || "";
       const bvnLastName = apiData.data.lastName?.toLowerCase() || "";
       const userLegalName = user.legalName.toLowerCase();
 
-      // Basic fuzzy matching to ensure the names overlap
       const namesMatch =
         userLegalName.includes(bvnFirstName) ||
         userLegalName.includes(bvnLastName);
 
       if (namesMatch) {
-        user.bvnStatus = "verified";
+        user.verification.status = "verified";
       } else {
-        user.bvnStatus = "rejected";
+        user.verification.status = "rejected";
+        await user.save();
         return res.status(400).json({
           message:
             "Verification failed. The name on this BVN does not match your registered legal name.",
-          bvnStatus: "rejected",
+          verificationStatus: "rejected",
         });
       }
     } else {
-      user.bvnStatus = "rejected";
+      user.verification.status = "rejected";
     }
 
     await user.save();
 
     res.status(200).json({
-      message: `BVN verification ${user.bvnStatus === "verified" ? "successful" : "failed"}`,
-      bvnStatus: user.bvnStatus,
+      message: `Identity verification ${user.verification.status === "verified" ? "successful" : "failed"}`,
+      verificationStatus: user.verification.status,
     });
   } catch (error) {
     console.error(
@@ -77,15 +78,15 @@ export const verifyBvn = async (req, res) => {
       error.response?.data || error.message,
     );
 
-    // Fall back to unsubmitted so they can try again if the API failed or timed out
     const user = await User.findById(req.user._id);
     if (user) {
-      user.bvnStatus = "unsubmitted";
+      if (!user.verification) user.verification = {};
+      user.verification.status = "unverified";
       await user.save();
     }
 
     res.status(500).json({
-      message: "BVN verification service error. Please try again later.",
+      message: "Verification service error. Please try again later.",
     });
   }
 };
@@ -129,11 +130,9 @@ export const updateUserProfile = async (req, res) => {
 
     const updatedUser = await user.save();
 
-    // 3. Return the updated info, swapping out ninStatus for bvnStatus
     res.json({
       _id: updatedUser._id,
       stageName: updatedUser.stageName,
-      bvnStatus: updatedUser.bvnStatus,
       bankDetails: updatedUser.bankDetails,
     });
   } else {

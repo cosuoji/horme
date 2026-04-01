@@ -1,9 +1,11 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useUserStore } from "../store/useUserStore";
+import { useNavigate } from "react-router-dom";
 
 const AdminLayout = () => {
   const { logout } = useUserStore();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Overview", path: "/admin" },
@@ -11,6 +13,10 @@ const AdminLayout = () => {
     { name: "Release Queue", path: "/admin/releases" },
     { name: "Withdrawals", path: "/admin/withdrawals" },
   ];
+
+  const handleLogout = () => {
+    logout(navigate); // Pass the navigator in
+  };
 
   return (
     <div className="min-h-screen flex bg-[#0a0a0a] text-[#EAE4D5]">
@@ -48,7 +54,7 @@ const AdminLayout = () => {
 
         <div className="p-4 border-t border-[#B6B09F]/20">
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="w-full py-2 px-4 border border-red-500/50 text-red-500 rounded hover:bg-red-500/10 transition-colors"
           >
             Exit Admin

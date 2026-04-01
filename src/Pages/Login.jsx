@@ -8,21 +8,26 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { user, login, loading } = useUserStore();
+  const { login, loading } = useUserStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // The 'login' function needs to return true/false
-    // AND reset the loading state internally.
     const success = await login(email, password);
 
     if (success) {
-      navigate("/dashboard");
+      // 🚀 Get the fresh user state from the store after login
+      const user = useUserStore.getState().user;
+
+      if (user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } else {
-      // thanks to the catch block in your Zustand store (see below).
       toast.error("Login failed");
     }
   };
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-[#0a0a0a] px-4">
       <motion.div

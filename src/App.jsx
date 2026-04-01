@@ -69,6 +69,17 @@ const AppContent = () => {
       </div>
     );
   }
+
+  const AuthRedirect = () => {
+    const { user } = useUserStore();
+    if (!user) return <Login />;
+    return user.role === "admin" ? (
+      <Navigate to="/admin" />
+    ) : (
+      <Navigate to="/dashboard" />
+    );
+  };
+
   // Check if the current path starts with /dashboard
   const isDashboard = location.pathname.startsWith("/dashboard");
 
@@ -98,14 +109,14 @@ const AppContent = () => {
             <Route path="/contact" element={<Contact />} />
             <Route
               path="/login"
-              element={!user ? <Login /> : <Navigate to="/dashboard" />} // Redirect logged in users to dashboard
+              element={<AuthRedirect />} // Redirect logged in users to dashboard
             />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route
               path="/signup"
-              element={!user ? <Signup /> : <Navigate to="/dashboard" />} // Redirect logged in users to dashboard
+              element={<AuthRedirect />} // Redirect logged in users to dashboard
             />
 
             {/* Admin Portal Routes - Protected by AdminRoute */}
