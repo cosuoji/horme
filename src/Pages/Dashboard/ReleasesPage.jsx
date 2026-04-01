@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaMusic, FaPlus, FaGlobe } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../lib/axios";
 
 const ReleasesPage = () => {
   const navigate = useNavigate();
