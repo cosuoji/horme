@@ -6,29 +6,35 @@ import {
   Navigate,
   useLocation, // 👈 Added useLocation here
 } from "react-router-dom";
-import Header from "./Layout/Header";
+
+//Static Pages
 import Homepage from "./Pages/Homepage";
 import About from "./Pages/About";
 import Services from "./Pages/Services";
 import Contact from "./Pages/Contact";
-import "./App.css";
 import Footer from "./Layout/Footer";
 import Clubs from "./Pages/Clubs";
 import InfluencerMarketing from "./Pages/InfluencerMarketing";
 import PrComms from "./Pages/PrComms";
 import Radio from "./Pages/Radio";
 import Label from "./Pages/Label";
-import Layout from "./Components/Layout";
 import ArtistPage from "./Components/ArtistPage";
+
+// Layouts
+import Layout from "./Components/Layout";
+import AdminLayout from "./Layout/AdminLayout";
+import Header from "./Layout/Header";
+
+//Auth Pages
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
 import VerifyEmail from "./Pages/VerifyEmail";
 import ForgotPassword from "./Pages/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword";
 
-import { useUserStore } from "./store/useUserStore";
-
+//Protected Routes
 import ProtectedRoute from "./Components/ProtectedRoute";
+import AdminRoute from "./Components/AdminRoute";
 
 // Dashboard routes
 import DashboardLayout from "./Layout/DashboardLayout";
@@ -39,6 +45,15 @@ import ReleasesPage from "./Pages/Dashboard/ReleasesPage";
 import ArtistProfileForm from "./Pages/Dashboard/ArtistProfileForm";
 import NewReleaseBuilder from "./Pages/Dashboard/NewReleaseBuilder";
 
+//Admin routes
+import AdminOverview from "./Pages/Admin/AdminOverview";
+import UserManagement from "./Pages/Admin/UserManagement";
+import ReleaseApprovalQueue from "./Pages/Admin/ReleaseApprovalQueue";
+import WithdrawalManager from "./Pages/Admin/WithdrawalManager";
+
+//Auth Pages
+import { useUserStore } from "./store/useUserStore";
+import "./App.css";
 import { Toaster } from "react-hot-toast";
 
 // 1. We create a sub-component to handle the layout logic
@@ -92,6 +107,22 @@ const AppContent = () => {
               path="/signup"
               element={!user ? <Signup /> : <Navigate to="/dashboard" />} // Redirect logged in users to dashboard
             />
+
+            {/* Admin Portal Routes - Protected by AdminRoute */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminLayout />
+                </AdminRoute>
+              }
+            >
+              {/* The 'index' route renders at exactly /admin */}
+              <Route index element={<AdminOverview />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="releases" element={<ReleaseApprovalQueue />} />
+              <Route path="withdrawals" element={<WithdrawalManager />} />
+            </Route>
 
             {/* Artist Portal Routes - Protected */}
             <Route

@@ -18,10 +18,19 @@ const userSchema = new mongoose.Schema(
     verificationTokenExpires: Date,
     resetPasswordToken: String,
     resetPasswordTokenExpires: Date,
-    bvnStatus: {
-      type: String,
-      enum: ["pending", "verified", "rejected", "unsubmitted"],
-      default: "unsubmitted",
+    verification: {
+      status: {
+        type: String,
+        enum: ["unverified", "pending", "verified", "rejected"],
+        default: "unverified",
+      },
+      method: {
+        type: String,
+        enum: ["bvn", "stripe", "sumsub"],
+        default: "bvn",
+      },
+      country: { type: String }, // e.g., 'NG', 'US', 'GB'
+      verifiedAt: { type: Date },
     },
     walletBalanceNGN: { type: Number, default: 0 },
     walletBalanceUSD: { type: Number, default: 0 },

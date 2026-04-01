@@ -86,10 +86,16 @@ export const loginUser = async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Public
 export const logoutUser = (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("jwt", "", {
     httpOnly: true,
     expires: new Date(0),
+    secure: isProduction,
+    sameSite: isProduction ? "lax" : "strict",
+    domain: isProduction ? ".hormemusic.com" : undefined, // 🚀 Crucial for localhost vs production
   });
+
   res.status(200).json({ message: "Logged out successfully" });
 };
 
