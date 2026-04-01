@@ -8,9 +8,9 @@ const generateToken = (res, userId) => {
 
   res.cookie("jwt", token, {
     httpOnly: true,
-    // 🚀 CRITICAL FOR RENDER/NETLIFY DEPLOYMENT:
-    secure: true, // Must be true for HTTPS (Render provides this)
-    sameSite: "none", // Must be 'none' to work across different domains
+    secure: true,
+    sameSite: "lax", // 🚀 Changed from 'none' to 'lax' because domains now match!
+    domain: ".hormemusic.com", // 🚀 The dot allows it to work on all subdomains
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 };

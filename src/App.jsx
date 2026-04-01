@@ -43,9 +43,17 @@ import { Toaster } from "react-hot-toast";
 
 // 1. We create a sub-component to handle the layout logic
 const AppContent = () => {
-  const { user } = useUserStore();
+  const { user, checkingAuth } = useUserStore(); // 👈 Pull checkingAuth
   const location = useLocation();
 
+  // 🚀 STOP EVERYTHING if we are still checking the session
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-[#B6B09F]"></div>
+      </div>
+    );
+  }
   // Check if the current path starts with /dashboard
   const isDashboard = location.pathname.startsWith("/dashboard");
 
