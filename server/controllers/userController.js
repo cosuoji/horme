@@ -1,6 +1,7 @@
 // controllers/userController.js
 import User from "../models/User.js";
 import axios from "axios"; // You'll use this to call Paystack/Flutterwave
+import { sendSupportSlackNotification } from "../utils/slack.js";
 
 // @desc    Verify user BVN without saving it
 // @route   POST /api/users/verify-bvn
@@ -168,5 +169,28 @@ export const assignScoutToArtist = async (req, res) => {
     res.json({ message: "Scout assigned successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error assigning scout" });
+  }
+};
+
+// @desc    Send support or label service request to Slack
+// @route   POST /api/users/support
+// @access  Private
+export const requestSupport = async (req, res) => {
+  const { serviceType, message } = req.body;
+
+  if (!serviceType || !message) {
+    return res.status(400).json({ message: "Please fill all fields." });
+  }
+
+  try {
+    const slackMessage = `🚨 *New Support / Label Service Request!*\n*Artist:* ${req.user.stageName} (${req.user.email})\n*Requested Service:* ${serviceType}\n*Message:* ${message}`;
+
+    await sendSupportSlackNotification(slackMessage);
+
+    res.status(200).json({
+      message: "Request sent successfully! We will get back to you shortly.",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error sending request." });
   }
 };

@@ -20,6 +20,9 @@ const NewReleaseBuilder = () => {
   const [artworkUploading, setArtworkUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [artworkPreview, setArtworkPreview] = useState(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState(0); // 🚀 Bonus: Track %
 
   // Master State for the Release
   const [releaseData, setReleaseData] = useState({
@@ -127,16 +130,24 @@ const NewReleaseBuilder = () => {
         console.log("Step A Success. Received:", presignedData);
 
         // --- STEP B: S3 Upload ---
-        console.log("Step B: Sending PUT request to S3...");
-
-        // FIXED: Safer way to handle the header cleanup to avoid the "null to object" error
         await axios.put(presignedData.uploadUrl, track.file, {
           headers: {
             "Content-Type": track.file.type,
           },
+          // 🚀 TRACK PROGRESS HERE
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            setUploadProgress(percentCompleted); // Update the bar
+
+            // Optional: Update the toast message in real-time
+            toast.loading(`Uploading Track ${i + 1}: ${percentCompleted}%`, {
+              id: toastId,
+            });
+          },
           transformRequest: [
             (data, headers) => {
-              // Only attempt to delete if headers actually exist
               if (headers) {
                 if (headers.common) delete headers.common["Authorization"];
                 delete headers["Authorization"];
@@ -145,7 +156,9 @@ const NewReleaseBuilder = () => {
             },
           ],
         });
+
         console.log("Step B Success: File is in S3.");
+        setUploadProgress(0); // Reset for the next track in the loop
 
         uploadedTracks.push({
           title: track.title,
@@ -813,33 +826,69 @@ const NewReleaseBuilder = () => {
             </div>
           </div>
 
-          <div className="bg-[#B6B09F]/5 border border-[#B6B09F]/20 p-4 rounded-lg text-sm text-[#B6B09F] flex gap-3">
-            <FaInfoCircle className="text-[#EAE4D5] mt-0.5 flex-shrink-0" />
-            <p>
-              By submitting this release, you confirm that you own all master
-              rights or have full clearance for all samples used. Your release
-              and artwork will be manually reviewed by our team before being
-              delivered to DSPs.
-            </p>
+          <div
+            className={`p-4 rounded-lg border transition-all ${
+              agreedToTerms
+                ? "bg-[#B6B09F]/10 border-[#B6B09F]/30"
+                : "bg-red-500/5 border-red-500/20"
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="royalty-agree"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 rounded border-[#B6B09F]/40 bg-[#0a0a0a] text-[#EAE4D5] focus:ring-0 cursor-pointer"
+              />
+              <label
+                htmlFor="royalty-agree"
+                className="text-xs leading-relaxed text-[#B6B09F] cursor-pointer"
+              >
+                I confirm I own 100% of the rights to this content. I agree to
+                the{" "}
+                <span className="text-[#EAE4D5] font-bold">
+                  80/20 Royalty Split
+                </span>
+                , where 80% of net receipts are paid to my account. I authorize
+                Horme Music to distribute this release to global stores.
+              </label>
+            </div>
           </div>
 
-          <div className="flex justify-between">
+          {/* Progress Bar (Shows up during upload) */}
+          {isSubmitting && (
+            <div className="w-full bg-[#B6B09F]/10 h-1 rounded-full overflow-hidden mt-4">
+              <div
+                className="bg-[#EAE4D5] h-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          )}
+          <div className="flex gap-4 mt-8">
+            {/* BACK BUTTON */}
             <button
               onClick={() => setStep(2)}
-              className="flex items-center gap-2 px-6 py-3 border border-[#B6B09F]/30 text-[#EAE4D5] rounded-lg hover:bg-[#B6B09F]/10 transition-colors"
               disabled={isSubmitting}
+              className="flex-1 py-4 border border-[#B6B09F]/20 text-[#B6B09F] font-bold rounded-lg hover:bg-[#B6B09F]/5 transition-all disabled:opacity-50 uppercase tracking-widest text-xs"
             >
-              <FaArrowLeft className="text-sm" /> Back to Tracks
+              Back to Tracks
             </button>
+
+            {/* SUBMIT BUTTON */}
             <button
               onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-3 bg-[#EAE4D5] text-[#0a0a0a] font-bold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting || !agreedToTerms}
+              className={`flex-[2] py-4 rounded-lg font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
+                agreedToTerms && !isSubmitting
+                  ? "bg-[#EAE4D5] text-[#0a0a0a] hover:bg-white"
+                  : "bg-[#B6B09F]/10 text-[#B6B09F]/40 cursor-not-allowed"
+              }`}
             >
               {isSubmitting
-                ? "Uploading Masters..."
-                : "Submit Release for Review"}{" "}
-              <FaArrowRight className="text-sm" />
+                ? `Uploading (${uploadProgress}%)...`
+                : "Submit Release for Review"}
+              {!isSubmitting && <FaArrowRight className="text-sm" />}
             </button>
           </div>
         </motion.div>

@@ -23,7 +23,6 @@ const ReleasesPage = () => {
     fetchReleases();
   }, []);
 
-  console.log(releases);
   return (
     <div>
       <div className="flex justify-between items-center mb-8">

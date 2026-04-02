@@ -11,13 +11,16 @@ import {
   FaBars,
   FaTimes,
   FaUserCircle,
+  FaNotesMedical,
 } from "react-icons/fa";
+import SupportModal from "../Components/SupportModal";
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, logout } = useUserStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -100,6 +103,19 @@ const DashboardLayout = () => {
                 </Link>
               );
             })}
+            <button
+              onClick={() => setIsSupportOpen(true)}
+              className="w-full text-left px-4 py-2 text-[#B6B09F] hover:text-[#EAE4D5] text-sm"
+            >
+              <FaNotesMedical className="inline-block mr-2" />
+              Request Label Services
+            </button>
+
+            {/* Render the modal at the bottom of the layout */}
+            <SupportModal
+              isOpen={isSupportOpen}
+              onClose={() => setIsSupportOpen(false)}
+            />
           </nav>
         </div>
 

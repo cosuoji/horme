@@ -4,6 +4,7 @@ import {
   verifyBvn,
   updateUserProfile,
   getUserProfile,
+  requestSupport,
 } from "../controllers/userController.js";
 import {
   getProfile,
@@ -52,5 +53,8 @@ router.post(
   upload.single("artwork"),
   uploadReleaseArtwork,
 );
+
+// NEW: Request support route
+router.post("/support", protect, requestSupport);
 
 export default router;

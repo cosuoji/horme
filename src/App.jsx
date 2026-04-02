@@ -82,11 +82,14 @@ const AppContent = () => {
 
   // Check if the current path starts with /dashboard
   const isDashboard = location.pathname.startsWith("/dashboard");
+  const isAdmin = location.pathname.startsWith("/admin");
+
+  const isPortal = isDashboard || isAdmin;
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* 2. Only show Header if we are NOT on a dashboard route */}
-      {!isDashboard && <Header />}
+      {!isPortal && <Header />}
 
       <main className="flex-grow">
         <Layout>
@@ -116,7 +119,7 @@ const AppContent = () => {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route
               path="/signup"
-              element={<AuthRedirect />} // Redirect logged in users to dashboard
+              element={<Signup />} // Redirect logged in users to dashboard
             />
 
             {/* Admin Portal Routes - Protected by AdminRoute */}
@@ -159,7 +162,7 @@ const AppContent = () => {
       </main>
 
       {/* 3. Only show Footer if we are NOT on a dashboard route */}
-      {!isDashboard && <Footer />}
+      {!isPortal && <Footer />}
       <Toaster />
     </div>
   );

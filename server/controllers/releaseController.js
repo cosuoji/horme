@@ -2,6 +2,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
 import Release from "../models/Release.js";
+import { sendSubmissionSlackNotification } from "../utils/slack.js";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -124,6 +125,14 @@ export const createRelease = async (req, res) => {
       tracks: formattedTracks, // 👈 Pushing the mapped array
       status: "pending",
     });
+
+    // 🚀 THE SLACK TRIGGER
+    const slackMessage = `💥 *New Release Submitted!*\n*Artist:* ${req.user.stageName || "Unknown"}\n*Title:* ${releaseTitle}\n*Type:* ${releaseType}\n*Tracks:* ${formattedTracks.length}\nGo to God Mode to review it.`;
+
+    // Run this without blocking the response to the user
+    sendSubmissionSlackNotification(slackMessage).catch((err) =>
+      console.error("Slack Notification Failed:", err),
+    );
 
     res.status(201).json({
       message: "Release submitted successfully!",
