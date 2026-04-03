@@ -158,3 +158,29 @@ export const processRelease = async (req, res) => {
     res.status(500).json({ message: "Error processing the release" });
   }
 };
+
+// @desc    Get dashboard stats for Admin
+// @route   GET /api/admin/stats
+// @access  Private/Admin
+export const getAdminStats = async (req, res) => {
+  try {
+    const totalArtists = await User.countDocuments({ role: "artist" }); // or just 'user'
+    const pendingReleases = await Release.countDocuments({ status: "pending" });
+
+    // Assuming you'll have a Withdrawal model later
+    const pendingWithdrawals = await Withdrawal.find({ status: "pending" });
+    const totalWithdrawalAmount = pendingWithdrawals.reduce(
+      (acc, curr) => acc + curr.amount,
+      0,
+    );
+
+    res.json({
+      totalArtists,
+      pendingReleases,
+      pendingWithdrawals, // Placeholder for now
+      totalWithdrawalAmount, // Placeholder
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching admin stats" });
+  }
+};

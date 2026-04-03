@@ -6,10 +6,13 @@ import {
   verifyUserManually,
   getPendingReleases,
   processRelease,
+  getAdminStats,
 } from "../controllers/adminController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+router.get("/stats", protect, admin, getAdminStats);
 
 // Existing Withdrawal Routes
 router.get("/withdrawals", protect, admin, getPendingWithdrawals);
