@@ -46,8 +46,6 @@ const AdminOverview = () => {
     },
   ];
 
-  console.log(stats);
-
   return (
     <div className="space-y-8">
       <div>

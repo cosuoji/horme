@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, Reorder } from "framer-motion";
 import {
   FaArrowRight,
@@ -9,10 +9,13 @@ import {
   FaBars,
   FaTrash,
   FaPlus,
+  FaSave, // Added for the draft icon
+  FaClock,
 } from "react-icons/fa";
 import axios from "../../lib/axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom"; // Add this to imports
 
 const NewReleaseBuilder = () => {
   const [step, setStep] = useState(1);
@@ -22,7 +25,49 @@ const NewReleaseBuilder = () => {
   const [artworkPreview, setArtworkPreview] = useState(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [uploadProgress, setUploadProgress] = useState(0); // 🚀 Bonus: Track %
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const { id } = useParams(); // Get ID from URL if it exists
+  const [isLoading, setIsLoading] = useState(!!id); // Load if we have an ID
+
+  useEffect(() => {
+    if (id) {
+      const fetchReleaseData = async () => {
+        try {
+          const { data } = await axios.get(`/api/releases/${id}`);
+
+          // Map backend data back to frontend state format
+          setReleaseData({
+            ...data,
+            // Convert featuredArtists objects back to comma-separated string for the input
+            featuredArtists:
+              data.featuredArtists?.map((a) => a.name).join(", ") || "",
+            // Format date for <input type="date">
+            releaseDate: data.releaseDate ? data.releaseDate.split("T")[0] : "",
+            preOrderDate: data.preOrderDate
+              ? data.preOrderDate.split("T")[0]
+              : "",
+            // Map tracks back to the state format
+            tracks: data.tracks.map((t) => ({
+              ...t,
+              featuredArtists:
+                t.featuredArtists?.map((a) => a.name).join(", ") || "",
+            })),
+          });
+
+          setArtworkPreview(data.artwork);
+          setSavedReleaseId(data._id); // Crucial: sets the ID so handleSubmit updates instead of creates
+        } catch (error) {
+          toast.error("Failed to load draft.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchReleaseData();
+    }
+  }, [id]);
+
+  // 🚀 PRO-TIP: Track the MongoDB ID to prevent duplicates
+  const [savedReleaseId, setSavedReleaseId] = useState(null);
 
   // Master State for the Release
   const [releaseData, setReleaseData] = useState({
@@ -55,7 +100,6 @@ const NewReleaseBuilder = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 1. Set local preview immediately for UX
     const localUrl = URL.createObjectURL(file);
     setArtworkPreview(localUrl);
 
@@ -66,7 +110,6 @@ const NewReleaseBuilder = () => {
 
     const formDataToSend = new FormData();
     formDataToSend.append("artwork", file);
-    // Pass the title so the backend can create the folder
     formDataToSend.append("releaseTitle", releaseData.title || "untitled");
 
     setArtworkUploading(true);
@@ -78,110 +121,110 @@ const NewReleaseBuilder = () => {
       );
 
       setReleaseData((prev) => ({ ...prev, artwork: data.imageUrl }));
-      // 2. Once uploaded, we can replace the local preview with the real S3 URL
       setArtworkPreview(data.imageUrl);
       toast.success("Artwork uploaded!");
     } catch (error) {
       toast.error("Failed to upload artwork.");
-      setArtworkPreview(null); // Clear preview on error
+      setArtworkPreview(null);
     } finally {
       setArtworkUploading(false);
     }
   };
 
-  // 🚀 NEW: The Master Submission Loop
-  const handleSubmit = async () => {
-    console.group("🚀 Starting Submission Process");
-    console.log("Initial Release Data:", releaseData);
+  // 🚀 REWRITTEN: Now handles Drafts and Final Submissions
+  const handleSubmit = async (isDraft = false) => {
+    console.group(isDraft ? "📝 Saving Draft" : "🚀 Starting Submission");
 
-    if (!releaseData.tracks || releaseData.tracks.length === 0) {
-      console.warn("Aborting: No tracks found.");
+    // 1. Validation Logic
+    if (!isDraft && (!releaseData.tracks || releaseData.tracks.length === 0)) {
       toast.error("Please add at least one track.");
       console.groupEnd();
       return;
     }
 
+    if (!isDraft && !releaseData.title) {
+      toast.error("Release title is required.");
+      console.groupEnd();
+      return;
+    }
+
     setIsSubmitting(true);
-    const toastId = toast.loading("Initiating upload process...");
+    const toastId = toast.loading(
+      isDraft ? "Saving progress..." : "Initiating upload...",
+    );
 
     try {
       const uploadedTracks = [];
 
+      // 2. Track Upload Loop
+      // We skip S3 if it's a draft and files aren't ready,
+      // OR if the track already has a fileUrl (resuming a draft)
       for (let i = 0; i < releaseData.tracks.length; i++) {
         const track = releaseData.tracks[i];
-        console.group(`🎵 Processing Track ${i + 1}: ${track.title}`);
 
-        // Safety Check 1: File existence
-        if (!track.file) {
-          throw new Error(`File missing for track: ${track.title}`);
+        // If resuming a draft, skip upload if we already have the S3 URL
+        if (track.fileUrl) {
+          uploadedTracks.push(track);
+          continue;
         }
-        console.log("Track File Object:", track.file);
 
-        // --- STEP A: Presigned URL ---
-        console.log("Step A: Requesting Presigned URL...");
-        const { data: presignedData } = await axios.post(
-          "/api/releases/get-presigned-url",
-          {
-            fileName: track.file.name,
-            fileType: track.file.type,
-            releaseTitle: releaseData.title,
-          },
-        );
-        console.log("Step A Success. Received:", presignedData);
+        // If it's a draft and the user hasn't selected a file yet, skip this track
+        if (isDraft && !track.file) {
+          uploadedTracks.push({
+            ...track,
+            featuredArtists: track.featuredArtists
+              ? track.featuredArtists.split(",").map((a) => a.trim())
+              : [],
+          });
+          continue;
+        }
 
-        // --- STEP B: S3 Upload ---
-        await axios.put(presignedData.uploadUrl, track.file, {
-          headers: {
-            "Content-Type": track.file.type,
-          },
-          // 🚀 TRACK PROGRESS HERE
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
-            );
-            setUploadProgress(percentCompleted); // Update the bar
-
-            // Optional: Update the toast message in real-time
-            toast.loading(`Uploading Track ${i + 1}: ${percentCompleted}%`, {
-              id: toastId,
-            });
-          },
-          transformRequest: [
-            (data, headers) => {
-              if (headers) {
-                if (headers.common) delete headers.common["Authorization"];
-                delete headers["Authorization"];
-              }
-              return data;
+        // Standard Upload Logic for final submission or new files in draft
+        if (track.file) {
+          const { data: presignedData } = await axios.post(
+            "/api/releases/get-presigned-url",
+            {
+              fileName: track.file.name,
+              fileType: track.file.type,
+              releaseTitle: releaseData.title,
             },
-          ],
-        });
+          );
 
-        console.log("Step B Success: File is in S3.");
-        setUploadProgress(0); // Reset for the next track in the loop
+          await axios.put(presignedData.uploadUrl, track.file, {
+            headers: { "Content-Type": track.file.type },
+            onUploadProgress: (p) =>
+              setUploadProgress(Math.round((p.loaded * 100) / p.total)),
+            transformRequest: [
+              (data, headers) => {
+                if (headers) delete headers["Authorization"];
+                return data;
+              },
+            ],
+          });
 
-        uploadedTracks.push({
-          title: track.title,
-          fileUrl: presignedData.fileUrl,
-          fileKey: presignedData.fileKey,
-          isrc: track.isrc,
-          explicit: track.explicit,
-          genre: track.genre,
-          trackNumber: i + 1,
-          featuredArtists: track.featuredArtists
-            ? track.featuredArtists
-                .split(",")
-                .map((a) => a.trim())
-                .filter(Boolean)
-            : [],
-        });
-
-        console.groupEnd(); // End Track Group
+          uploadedTracks.push({
+            title: track.title,
+            fileUrl: presignedData.fileUrl,
+            fileKey: presignedData.fileKey,
+            isrc: track.isrc,
+            explicit: track.explicit,
+            genre: track.genre,
+            trackNumber: i + 1,
+            featuredArtists: track.featuredArtists
+              ? track.featuredArtists
+                  .split(",")
+                  .map((a) => a.trim())
+                  .filter(Boolean)
+              : [],
+          });
+          setUploadProgress(0);
+        }
       }
 
-      // --- STEP C: Final Mongo Save ---
-      console.group("💾 Saving to Database");
+      // 3. Final Payload (Includes releaseId for upserting)
       const finalPayload = {
+        releaseId: savedReleaseId, // 👈 KEY: Tells backend to update instead of create
+        isDraft: isDraft,
         releaseTitle: releaseData.title,
         releaseType: releaseData.releaseType,
         artworkUrl: releaseData.artwork,
@@ -194,7 +237,6 @@ const NewReleaseBuilder = () => {
         cLine: releaseData.cLine,
         pLine: releaseData.pLine,
         upc: releaseData.hasUPC ? releaseData.upcCode : "",
-        // Split the release-level string into an array
         featuredArtists: releaseData.featuredArtists
           ? releaseData.featuredArtists
               .split(",")
@@ -203,30 +245,33 @@ const NewReleaseBuilder = () => {
           : [],
         tracks: uploadedTracks,
       };
-      console.log("Final Payload being sent to /api/releases:", finalPayload);
 
-      await axios.post("/api/releases", finalPayload);
-      console.log("Step C Success: Database updated.");
-      console.groupEnd();
+      const response = await axios.post("/api/releases", finalPayload);
 
-      toast.success("Release submitted successfully!", { id: toastId });
-      setTimeout(() => navigate("/dashboard/releases"), 1500);
-    } catch (error) {
-      console.error("❌ SUBMISSION ERROR:");
-      console.log("Error Name:", error.name);
-      console.log("Error Message:", error.message);
-      if (error.response) {
-        console.log("Server Response Data:", error.response.data);
+      // 4. Update the Saved ID from the response
+      if (response.data.release?._id) {
+        setSavedReleaseId(response.data.release._id);
       }
 
-      toast.error(error.message || "An error occurred during upload.", {
+      toast.success(isDraft ? "Draft saved!" : "Release submitted!", {
+        id: toastId,
+      });
+
+      // If it was a final submission, move to dashboard.
+      // If it was a draft, stay here so they can keep working!
+      if (!isDraft) {
+        setTimeout(() => navigate("/dashboard/releases"), 1500);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "An error occurred.", {
         id: toastId,
       });
     } finally {
       setIsSubmitting(false);
-      console.groupEnd(); // End Main Process Group
+      console.groupEnd();
     }
   };
+
   const inputStyle =
     "w-full px-4 py-3 bg-[#0a0a0a] border border-[#B6B09F]/20 rounded-lg text-[#EAE4D5] placeholder-[#B6B09F]/50 focus:border-[#EAE4D5] focus:outline-none transition-colors";
   const labelStyle = "block text-[#EAE4D5] text-sm mb-2";
@@ -243,24 +288,49 @@ const NewReleaseBuilder = () => {
       return "Please enter your UPC code or uncheck the box.";
     return null;
   };
+  if (isLoading) return <div className="text-[#EAE4D5]">Loading Draft...</div>;
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
       {/* HEADER & PROGRESS BAR */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#EAE4D5]">
-          Create New Release
-        </h1>
-        <div className="flex gap-2 mt-6">
-          <div
-            className={`h-2 flex-1 rounded-full ${step >= 1 ? "bg-[#EAE4D5]" : "bg-[#B6B09F]/20"}`}
-          ></div>
-          <div
-            className={`h-2 flex-1 rounded-full ${step >= 2 ? "bg-[#EAE4D5]" : "bg-[#B6B09F]/20"}`}
-          ></div>
-          <div
-            className={`h-2 flex-1 rounded-full ${step >= 3 ? "bg-[#EAE4D5]" : "bg-[#B6B09F]/20"}`}
-          ></div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[#EAE4D5]">
+              Create New Release
+            </h1>
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-[10px] text-[#B6B09F]/60 flex items-center gap-1.5 uppercase tracking-widest bg-[#B6B09F]/5 px-3 py-1 rounded-full border border-[#B6B09F]/10">
+                <FaClock className="text-[#EAE4D5]/40" />
+                Draft expires in 10 Days
+              </span>
+              {savedReleaseId && (
+                <span className="text-[10px] text-green-400/60 flex items-center gap-1.5 uppercase tracking-widest bg-green-400/5 px-3 py-1 rounded-full border border-green-400/10">
+                  ID: {savedReleaseId.slice(-6)} (Saved)
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* 💾 QUICK SAVE BUTTON (Available on all steps) */}
+          <button
+            onClick={() => handleSubmit(true)}
+            disabled={isSubmitting || !releaseData.title}
+            className="flex items-center gap-2 px-4 py-2 border border-[#B6B09F]/20 text-[#B6B09F] text-xs font-bold rounded-lg hover:bg-[#B6B09F]/10 transition-all disabled:opacity-30 uppercase tracking-widest"
+          >
+            <FaSave /> Save Progress
+          </button>
+        </div>
+
+        <div className="flex gap-2 mt-8">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className={`h-2 flex-1 rounded-full transition-all duration-500 ${
+                step >= i ? "bg-[#EAE4D5]" : "bg-[#B6B09F]/20"
+              }`}
+            ></div>
+          ))}
         </div>
         <div className="flex justify-between text-xs text-[#B6B09F] mt-2 font-medium uppercase tracking-wider">
           <span>1. Details & Artwork</span>
@@ -532,7 +602,14 @@ const NewReleaseBuilder = () => {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-col md:flex-row justify-end gap-3 pt-6 border-t border-[#B6B09F]/10">
+            <button
+              onClick={() => handleSubmit(true)}
+              disabled={isSubmitting || !releaseData.title}
+              className="flex items-center justify-center gap-2 px-6 py-3 border border-[#B6B09F]/30 text-[#EAE4D5] font-bold rounded-lg hover:bg-[#B6B09F]/10 transition-colors disabled:opacity-30"
+            >
+              <FaSave className="text-sm" /> Save Draft
+            </button>
             <button
               onClick={() => {
                 const error = validateStep1();
@@ -540,11 +617,14 @@ const NewReleaseBuilder = () => {
                   toast.error(error);
                   return;
                 }
+                // We save as draft automatically when moving forward to ensure data is synced
+                handleSubmit(true);
                 setStep(2);
               }}
-              className="flex items-center gap-2 px-6 py-3 bg-[#EAE4D5] text-[#0a0a0a] font-bold rounded-lg hover:bg-opacity-90 transition-colors"
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-2 px-8 py-3 bg-[#EAE4D5] text-[#0a0a0a] font-bold rounded-lg hover:bg-opacity-90 transition-colors"
             >
-              Save & Next: Add Tracks <FaArrowRight className="text-sm" />
+              Continue to Tracks <FaArrowRight className="text-sm" />
             </button>
           </div>
         </motion.div>
@@ -724,20 +804,33 @@ const NewReleaseBuilder = () => {
             )}
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex flex-col md:flex-row justify-between gap-4 pt-6 border-t border-[#B6B09F]/10">
             <button
               onClick={() => setStep(1)}
-              className="flex items-center gap-2 px-6 py-3 border border-[#B6B09F]/30 text-[#EAE4D5] rounded-lg hover:bg-[#B6B09F]/10 transition-colors"
+              className="flex items-center justify-center gap-2 px-6 py-3 border border-[#B6B09F]/30 text-[#EAE4D5] rounded-lg hover:bg-[#B6B09F]/10 transition-colors"
             >
               <FaArrowLeft className="text-sm" /> Back to Details
             </button>
-            <button
-              onClick={() => setStep(3)}
-              disabled={releaseData.tracks.length === 0}
-              className="flex items-center gap-2 px-6 py-3 bg-[#EAE4D5] text-[#0a0a0a] font-bold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Save & Next: Review <FaArrowRight className="text-sm" />
-            </button>
+
+            <div className="flex flex-col md:flex-row gap-3">
+              <button
+                onClick={() => handleSubmit(true)}
+                disabled={isSubmitting}
+                className="flex items-center justify-center gap-2 px-6 py-3 border border-[#B6B09F]/30 text-[#EAE4D5] font-bold rounded-lg hover:bg-[#B6B09F]/10 transition-colors disabled:opacity-30"
+              >
+                <FaSave className="text-sm" /> Save Draft
+              </button>
+              <button
+                onClick={() => {
+                  handleSubmit(true);
+                  setStep(3);
+                }}
+                disabled={releaseData.tracks.length === 0 || isSubmitting}
+                className="flex items-center justify-center gap-2 px-8 py-3 bg-[#EAE4D5] text-[#0a0a0a] font-bold rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-30"
+              >
+                Review Release <FaArrowRight className="text-sm" />
+              </button>
+            </div>
           </div>
         </motion.div>
       )}
@@ -865,8 +958,7 @@ const NewReleaseBuilder = () => {
               />
             </div>
           )}
-          <div className="flex gap-4 mt-8">
-            {/* BACK BUTTON */}
+          <div className="flex flex-col md:flex-row gap-4 mt-8">
             <button
               onClick={() => setStep(2)}
               disabled={isSubmitting}
@@ -875,9 +967,17 @@ const NewReleaseBuilder = () => {
               Back to Tracks
             </button>
 
-            {/* SUBMIT BUTTON */}
+            {/* Added an explicit "Save as Draft" here too, in case they aren't ready to split royalties yet */}
             <button
-              onClick={handleSubmit}
+              onClick={() => handleSubmit(true)}
+              disabled={isSubmitting}
+              className="flex-1 py-4 border border-[#B6B09F]/20 text-[#EAE4D5] font-bold rounded-lg hover:bg-[#B6B09F]/5 transition-all disabled:opacity-50 uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+            >
+              <FaSave /> Save Draft
+            </button>
+
+            <button
+              onClick={() => handleSubmit(false)} // isDraft = false
               disabled={isSubmitting || !agreedToTerms}
               className={`flex-[2] py-4 rounded-lg font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
                 agreedToTerms && !isSubmitting

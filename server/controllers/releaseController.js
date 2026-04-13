@@ -44,9 +44,13 @@ export const getPresignedUrl = async (req, res) => {
 
 // @route   POST /api/users/releases
 // @access  Private (Artist)
+// @route   POST /api/users/releases
+// @access  Private (Artist)
 export const createRelease = async (req, res) => {
   try {
     const {
+      releaseId, // 👈 New: To check if we are updating an existing draft
+      isDraft, // 👈 New: Boolean from frontend
       releaseTitle,
       releaseType,
       artworkUrl,
@@ -63,51 +67,41 @@ export const createRelease = async (req, res) => {
       tracks,
     } = req.body;
 
-    // 1. Safety Validation
-    if (
-      !releaseTitle ||
-      !releaseType ||
-      !artworkUrl ||
-      !releaseDate ||
-      !genre ||
-      !tracks ||
-      tracks.length === 0
-    ) {
-      return res.status(400).json({
-        message: "Please provide all required fields and at least one track.",
-      });
+    // 1. CONDITIONAL VALIDATION
+    // Only run strict checks if the user is actually SUBMITTING (not drafting)
+    if (!isDraft) {
+      if (
+        !releaseTitle ||
+        !releaseType ||
+        !artworkUrl ||
+        !releaseDate ||
+        !genre ||
+        !tracks ||
+        tracks.length === 0
+      ) {
+        return res.status(400).json({
+          message:
+            "Please provide all required fields and at least one track before submitting.",
+        });
+      }
     }
 
-    // 🚀 2. FORMAT DATA FOR HYBRID SCHEMA 🚀
-
-    // Format Release-level features
+    // 2. FORMAT DATA (Same hybrid logic, but handles empty arrays for drafts)
     const formattedReleaseArtists = Array.isArray(featuredArtists)
-      ? featuredArtists.map((name) => ({
-          name: name,
-          user: null,
+      ? featuredArtists.map((name) => ({ name, user: null }))
+      : [];
+
+    const formattedTracks = Array.isArray(tracks)
+      ? tracks.map((track) => ({
+          ...track,
+          featuredArtists: Array.isArray(track.featuredArtists)
+            ? track.featuredArtists.map((name) => ({ name, user: null }))
+            : [],
         }))
       : [];
 
-    // Format Track-level features
-    const formattedTracks = Array.isArray(tracks)
-      ? tracks.map((track) => {
-          // Check if the track has features, if so map them, otherwise return empty array
-          const formattedTrackArtists = Array.isArray(track.featuredArtists)
-            ? track.featuredArtists.map((name) => ({
-                name: name,
-                user: null,
-              }))
-            : [];
-
-          return {
-            ...track,
-            featuredArtists: formattedTrackArtists,
-          };
-        })
-      : [];
-
-    // 3. Create the document
-    const newRelease = await Release.create({
+    // 3. THE "UPSERT" LOGIC (Update or Create)
+    const releaseData = {
       primaryArtist: req.user._id,
       title: releaseTitle,
       releaseType,
@@ -121,28 +115,48 @@ export const createRelease = async (req, res) => {
       cLine,
       pLine,
       upc,
-      featuredArtists: formattedReleaseArtists, // 👈 Pushing the mapped array
-      tracks: formattedTracks, // 👈 Pushing the mapped array
-      status: "pending",
-    });
+      featuredArtists: formattedReleaseArtists,
+      tracks: formattedTracks,
+      status: isDraft ? "draft" : "pending", // 🚀 The Status Switch
+    };
 
-    // 🚀 THE SLACK TRIGGER
-    const slackMessage = `💥 *New Release Submitted!*\n*Artist:* ${req.user.stageName || "Unknown"}\n*Title:* ${releaseTitle}\n*Type:* ${releaseType}\n*Tracks:* ${formattedTracks.length}\nGo to God Mode to review it.`;
+    let savedRelease;
 
-    // Run this without blocking the response to the user
-    sendSubmissionSlackNotification(slackMessage).catch((err) =>
-      console.error("Slack Notification Failed:", err),
-    );
+    if (releaseId) {
+      // Update existing draft
+      savedRelease = await Release.findOneAndUpdate(
+        { _id: releaseId, primaryArtist: req.user._id },
+        { $set: releaseData },
+        { new: true, runValidators: true },
+      );
+    } else {
+      // Create brand new document
+      savedRelease = await Release.create(releaseData);
+    }
 
-    res.status(201).json({
-      message: "Release submitted successfully!",
-      release: newRelease,
+    // 4. CONDITIONAL SLACK TRIGGER
+    // We only ping Slack if it's a real submission
+    if (!isDraft) {
+      const slackMessage = `💥 *New Release Submitted!*\n*Artist:* ${
+        req.user.stageName || "Unknown"
+      }\n*Title:* ${releaseTitle}\n*Type:* ${releaseType}\n*Tracks:* ${
+        formattedTracks.length
+      }\nGo to God Mode to review it.`;
+
+      sendSubmissionSlackNotification(slackMessage).catch((err) =>
+        console.error("Slack Notification Failed:", err),
+      );
+    }
+
+    res.status(releaseId ? 200 : 201).json({
+      message: isDraft
+        ? "Draft saved successfully!"
+        : "Release submitted successfully!",
+      release: savedRelease,
     });
   } catch (error) {
-    console.error("Error creating release:", error);
-    res
-      .status(500)
-      .json({ message: "Server error while saving the release document." });
+    console.error("Error saving release:", error);
+    res.status(500).json({ message: "Server error while saving release." });
   }
 };
 
@@ -190,5 +204,28 @@ export const uploadArtwork = async (req, res) => {
     res.status(200).json({ imageUrl });
   } catch (error) {
     res.status(500).json({ message: "Failed to upload artwork." });
+  }
+};
+
+// @desc    Get a single release by ID
+// @route   GET /api/releases/:id
+// @access  Private (Artist)
+export const getReleaseById = async (req, res) => {
+  try {
+    const release = await Release.findOne({
+      _id: req.params.id,
+      primaryArtist: req.user._id,
+    });
+
+    if (!release) {
+      return res.status(404).json({ message: "Release not found." });
+    }
+
+    res.status(200).json(release);
+  } catch (error) {
+    console.error("Error fetching release:", error);
+    res
+      .status(500)
+      .json({ message: "Server error while fetching release details." });
   }
 };

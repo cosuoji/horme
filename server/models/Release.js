@@ -1,16 +1,26 @@
 import mongoose from "mongoose";
 
+// Helper function to check if a field should be mandatory
+const isNotDraft = function () {
+  return this.status !== "draft";
+};
+
 // 1. Define the Track Sub-Schema
 const trackSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true },
-    fileUrl: { type: String, required: true },
-    fileKey: { type: String, required: true },
+    // In a draft, we might not even have a title yet
+    title: {
+      type: String,
+      required: isNotDraft,
+      trim: true,
+    },
+    // Files are definitely missing in early drafts
+    fileUrl: { type: String, required: isNotDraft },
+    fileKey: { type: String, required: isNotDraft },
     isrc: { type: String, trim: true },
     explicit: { type: Boolean, default: false },
-    trackNumber: { type: Number, required: true },
+    trackNumber: { type: Number, required: isNotDraft },
 
-    // Hybrid approach: Array of objects
     featuredArtists: [
       {
         name: { type: String, required: true, trim: true },
@@ -28,21 +38,20 @@ const trackSchema = new mongoose.Schema(
 // 2. The Main Merged Release Schema
 const releaseSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true }, // We keep Title required to identify the draft
     releaseType: {
       type: String,
       enum: ["Single", "EP", "Album", "Compilation"],
-      required: true,
+      required: isNotDraft, // Can be selected later
     },
-    artwork: { type: String, required: true },
+    artwork: { type: String, required: isNotDraft },
 
     primaryArtist: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: true, // Always need to know who owns the draft
     },
 
-    // Hybrid approach: Array of objects
     featuredArtists: [
       {
         name: { type: String, required: true, trim: true },
@@ -54,32 +63,28 @@ const releaseSchema = new mongoose.Schema(
       },
     ],
 
-    // Metadata for Distribution
-    releaseDate: { type: Date, required: true },
+    releaseDate: { type: Date, required: isNotDraft },
     preOrderDate: { type: Date },
     timeZone: { type: String, default: "Local Time" },
-    genre: { type: String, required: true },
+    genre: { type: String, required: isNotDraft },
     label: { type: String, trim: true },
     language: { type: String, default: "English" },
 
-    // 🚀 FIXED: Renamed to match the frontend state
     cLine: { type: String, trim: true },
     pLine: { type: String, trim: true },
-
     upc: { type: String },
 
     // 3. The Tracks Array
     tracks: [trackSchema],
 
-    // Status
+    // Status 🚀 ADDED 'draft' AND CHANGED DEFAULT
     status: {
       type: String,
-      enum: ["pending", "distributed", "takedown", "rejected"],
-      default: "pending",
+      enum: ["draft", "pending", "distributed", "takedown", "rejected"],
+      default: "draft",
     },
     rejectionReason: { type: String },
 
-    // Custom Split Logic
     contractSplit: {
       artistPercentage: { type: Number, default: 0.8 },
       labelPercentage: { type: Number, default: 0.2 },

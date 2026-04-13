@@ -5,6 +5,7 @@ import {
   createRelease,
   getUserReleases,
   uploadArtwork,
+  getReleaseById,
 } from "../controllers/releaseController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -35,5 +36,8 @@ router.post(
 // POST /api/users/releases - Submit new release
 // GET  /api/users/releases - View dashboard releases
 router.route("/").post(protect, createRelease).get(protect, getUserReleases);
+
+// GET /api/users/releases/:id - View release details
+router.get("/:id", protect, getReleaseById);
 
 export default router;

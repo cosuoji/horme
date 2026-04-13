@@ -128,6 +128,16 @@ const ReleasesPage = () => {
                     {new Date(release.releaseDate).toLocaleDateString()}
                   </p>
                 </div>
+                {release.status === "draft" && (
+                  <button
+                    onClick={() =>
+                      navigate(`/dashboard/releases/edit/${release._id}`)
+                    }
+                    className="px-4 py-2 text-xs font-bold border border-[#B6B09F]/20 text-[#EAE4D5] rounded hover:bg-[#B6B09F]/10 transition-all"
+                  >
+                    Continue
+                  </button>
+                )}
               </div>
             ))}
           </div>

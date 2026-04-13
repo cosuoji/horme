@@ -153,6 +153,7 @@ const AppContent = () => {
               <Route path="settings" element={<SettingsPage />} />
               <Route path="releases" element={<ReleasesPage />} />
               <Route path="releases/new" element={<NewReleaseBuilder />} />
+              <Route path="releases/edit/:id" element={<NewReleaseBuilder />} />
             </Route>
 
             {/* Catch-all route at absolute bottom */}
