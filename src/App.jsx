@@ -21,6 +21,8 @@ import Label from "./Pages/Label";
 import ArtistPage from "./Components/ArtistPage";
 import Terms from "./Pages/Terms";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
+import CookieConsent from "./Components/CookieConsent";
+import CookiePolicy from "./Pages/CookiePolicy";
 
 // Layouts
 import Layout from "./Components/Layout";
@@ -53,6 +55,7 @@ import AdminOverview from "./Pages/Admin/AdminOverview";
 import UserManagement from "./Pages/Admin/UserManagement";
 import ReleaseApprovalQueue from "./Pages/Admin/ReleaseApprovalQueue";
 import WithdrawalManager from "./Pages/Admin/WithdrawalManager";
+import ActivityLog from "./Pages/Admin/ActivityLog";
 
 //Auth Pages
 import { useUserStore } from "./store/useUserStore";
@@ -139,6 +142,7 @@ const AppContent = () => {
               <Route path="users" element={<UserManagement />} />
               <Route path="releases" element={<ReleaseApprovalQueue />} />
               <Route path="withdrawals" element={<WithdrawalManager />} />
+              <Route path="logs" element={<ActivityLog />} />
             </Route>
 
             {/* Artist Portal Routes - Protected */}
@@ -165,6 +169,7 @@ const AppContent = () => {
             <Route path="*" element={<Navigate to={"/"} />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
           </Routes>
         </Layout>
       </main>
@@ -172,6 +177,7 @@ const AppContent = () => {
       {/* 3. Only show Footer if we are NOT on a dashboard route */}
       {!isPortal && <Footer />}
       <Toaster />
+      <CookieConsent />
     </div>
   );
 };

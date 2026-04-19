@@ -15,6 +15,7 @@ const AdminLayout = () => {
     { name: "Users & KYC", path: "/admin/users" },
     { name: "Release Queue", path: "/admin/releases" },
     { name: "Withdrawals", path: "/admin/withdrawals" },
+    { name: "Activity Logs", path: "/admin/logs" },
   ];
 
   const handleLogout = () => {

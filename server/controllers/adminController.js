@@ -9,6 +9,9 @@ import {
   sendReleaseApprovalEmail,
   sendReleaseRejectionEmail,
 } from "../utils/emailService.js";
+import { logAdminAction } from "../middleware/authMiddleware.js";
+import AuditLog from "../models/AuditLog.js";
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -118,6 +121,15 @@ export const verifyUserManually = async (req, res) => {
     if (!updatedUser)
       return res.status(404).json({ message: "User not found" });
 
+    await AuditLog.create({
+      adminId: req.user._id,
+      action: "USER_VERIFIED_MANUALLY",
+      targetId: updatedUser._id,
+      targetModel: "User",
+      changes: { method: "manual_admin", status: "verified" },
+      ipAddress: req.ip,
+    });
+
     res.status(200).json({
       message: "User manually verified successfully",
       user: updatedUser,
@@ -192,7 +204,7 @@ export const processRelease = async (req, res) => {
     if (!release) {
       return res.status(404).json({ message: "Release not found" });
     }
-
+    const oldStatus = release.status;
     release.status = status;
 
     if (status === "rejected") {
@@ -202,6 +214,15 @@ export const processRelease = async (req, res) => {
     }
 
     await release.save();
+
+    await AuditLog.create({
+      adminId: req.user._id,
+      action: `RELEASE_${status.toUpperCase()}`,
+      targetId: release._id,
+      targetModel: "Release",
+      changes: { from: oldStatus, to: status, reason: reason || "N/A" },
+      ipAddress: req.ip,
+    });
 
     // --- 📧 Trigger Email Notifications ---
     const ownerEmail = release.releaseOwner?.email;
@@ -259,5 +280,17 @@ export const getAdminStats = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error fetching admin stats" });
+  }
+};
+
+export const getAuditLogs = async (req, res) => {
+  try {
+    const logs = await AuditLog.find()
+      .populate("adminId", "name email") // Show who did it
+      .sort({ timestamp: -1 })
+      .limit(200); // Keep it snappy
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch logs" });
   }
 };

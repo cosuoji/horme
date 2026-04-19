@@ -7,6 +7,7 @@ import {
   getPendingReleases,
   processRelease,
   getAdminStats,
+  getAuditLogs,
 } from "../controllers/adminController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
@@ -25,5 +26,7 @@ router.put("/users/:id/verify", protect, admin, verifyUserManually);
 // 🚀 New Release Queue Routes
 router.get("/releases", protect, admin, getPendingReleases);
 router.put("/releases/:id", protect, admin, processRelease);
+
+router.get("/audit-logs", protect, admin, getAuditLogs);
 
 export default router;
