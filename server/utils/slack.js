@@ -3,11 +3,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-console.log(
-  "Checking ENV Loader:",
-  process.env.SLACK_SUBMISSIONS_WEBHOOK_URL ? "FOUND" : "NOT FOUND",
-);
-
 export const sendSubmissionSlackNotification = async (message) => {
   const webhookUrl = process.env.SLACK_SUBSMISSIONS_WEBHOOK_URL;
 
@@ -38,4 +33,12 @@ export const sendSupportSlackNotification = async (message) => {
   } catch (error) {
     console.error("Failed to send Slack notification:", error.message);
   }
+};
+
+export const notifyAdmin = (message) => {
+  // We don't use 'await' here in the main flow
+  sendSubmissionSlackNotification(message).catch((err) => {
+    // Log it to a file or error service like Sentry
+    console.error("Silent Slack Failure:", err);
+  });
 };

@@ -33,7 +33,7 @@ const Label = () => {
         {/* Main Content */}
         <div>
           <h2 className="text-4xl font-bold text-[#EAE4D5] mb-4">
-            Horme Music Label Services
+            Motion Works Label Services
           </h2>
           <p className="text-lg leading-relaxed">
             From high-energy club nights to exclusive VIP events, our team knows

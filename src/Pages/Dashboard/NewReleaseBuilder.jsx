@@ -9,13 +9,15 @@ import {
   FaBars,
   FaTrash,
   FaPlus,
-  FaSave, // Added for the draft icon
+  FaSave,
+  FaCheck,
   FaClock,
 } from "react-icons/fa";
 import axios from "../../lib/axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom"; // Add this to imports
+import { useParams } from "react-router-dom";
+import LegalModal from "../../Components/LegalModal";
 
 const NewReleaseBuilder = () => {
   const [step, setStep] = useState(1);
@@ -28,6 +30,9 @@ const NewReleaseBuilder = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const { id } = useParams(); // Get ID from URL if it exists
   const [isLoading, setIsLoading] = useState(!!id); // Load if we have an ID
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalName, setLegalName] = useState("");
+  const [hasSigned, setHasSigned] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -38,6 +43,8 @@ const NewReleaseBuilder = () => {
           // Map backend data back to frontend state format
           setReleaseData({
             ...data,
+            primaryArtists:
+              data.primaryArtists?.map((a) => a.name).join(", ") || "",
             // Convert featuredArtists objects back to comma-separated string for the input
             featuredArtists:
               data.featuredArtists?.map((a) => a.name).join(", ") || "",
@@ -73,6 +80,7 @@ const NewReleaseBuilder = () => {
   const [releaseData, setReleaseData] = useState({
     releaseType: "Single",
     title: "",
+    primaryArtists: "",
     featuredArtists: "",
     artwork: null,
     releaseDate: "",
@@ -210,6 +218,13 @@ const NewReleaseBuilder = () => {
             explicit: track.explicit,
             genre: track.genre,
             trackNumber: i + 1,
+            primaryArtists: track.primaryArtists
+              ? track.primaryArtists
+                  .split(",")
+                  .map((a) => a.trim())
+                  .filter(Boolean)
+              : [],
+            // Existing featured logic
             featuredArtists: track.featuredArtists
               ? track.featuredArtists
                   .split(",")
@@ -237,6 +252,14 @@ const NewReleaseBuilder = () => {
         cLine: releaseData.cLine,
         pLine: releaseData.pLine,
         upc: releaseData.hasUPC ? releaseData.upcCode : "",
+        primaryArtists: releaseData.primaryArtists
+          ? releaseData.primaryArtists
+              .split(",")
+              .map((a) => a.trim())
+              .filter(Boolean)
+          : [],
+
+        // Format Featured Artists
         featuredArtists: releaseData.featuredArtists
           ? releaseData.featuredArtists
               .split(",")
@@ -244,6 +267,13 @@ const NewReleaseBuilder = () => {
               .filter(Boolean)
           : [],
         tracks: uploadedTracks,
+
+        legalConsent: isDraft
+          ? undefined
+          : {
+              agreed: hasSigned,
+              signedName: legalName,
+            },
       };
 
       const response = await axios.post("/api/releases", finalPayload);
@@ -524,19 +554,36 @@ const NewReleaseBuilder = () => {
                 />
               </div>
             </div>
-            {/* FEATURED ARTISTS (RELEASE LEVEL) */}
-            <div className="mt-4">
-              <label className={labelStyle}>
-                Featured Artists (Release Level)
-              </label>
-              <input
-                type="text"
-                name="featuredArtists"
-                value={releaseData.featuredArtists}
-                onChange={handleChange}
-                className={inputStyle}
-                placeholder="e.g. Burna Boy, Wizkid (comma separated)"
-              />
+            {/* ARTIST METADATA */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className={labelStyle}>Primary Artists</label>
+                <input
+                  type="text"
+                  name="primaryArtists"
+                  value={releaseData.primaryArtists}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  placeholder="e.g. Olu, Skepta (comma separated)"
+                />
+                <p className="text-xs text-[#B6B09F]/70 mt-1">
+                  The main artists on the release.
+                </p>
+              </div>
+              <div>
+                <label className={labelStyle}>Featured Artists</label>
+                <input
+                  type="text"
+                  name="featuredArtists"
+                  value={releaseData.featuredArtists}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  placeholder="e.g. Burna Boy, Wizkid (comma separated)"
+                />
+                <p className="text-xs text-[#B6B09F]/70 mt-1">
+                  Guest appearances (optional).
+                </p>
+              </div>
             </div>
 
             {/* COPYRIGHT LINES */}
@@ -549,7 +596,7 @@ const NewReleaseBuilder = () => {
                   value={releaseData.cLine}
                   onChange={handleChange}
                   className={inputStyle}
-                  placeholder="e.g. 2026 Horme Music Worldwide"
+                  placeholder="e.g. 2026 Motion Works"
                 />
               </div>
               <div>
@@ -560,7 +607,7 @@ const NewReleaseBuilder = () => {
                   value={releaseData.pLine}
                   onChange={handleChange}
                   className={inputStyle}
-                  placeholder="e.g. 2026 Horme Music Worldwide"
+                  placeholder="e.g. 2026 Motion Works"
                 />
               </div>
             </div>
@@ -659,7 +706,8 @@ const NewReleaseBuilder = () => {
                     file: file,
                     isrc: "",
                     explicit: false,
-                    featuredArtists: "",
+                    primaryArtists: releaseData.primaryArtists || "", // 🚀 New: track-specific primary artists
+                    featuredArtists: "", // 🚀 Existing
                   }));
                   setReleaseData((prev) => ({
                     ...prev,
@@ -752,24 +800,55 @@ const NewReleaseBuilder = () => {
                       </div>
                     </div>
                     {/* FEATURED ARTISTS (TRACK LEVEL) */}
-                    <div className="mt-2 col-span-1 md:col-span-2">
-                      <label className="text-xs text-[#B6B09F] mb-1 block">
-                        Track Featured Artists
-                      </label>
-                      <input
-                        type="text"
-                        value={track.featuredArtists || ""}
-                        placeholder="Comma separated names..."
-                        onChange={(e) => {
-                          const updated = [...releaseData.tracks];
-                          updated[index].featuredArtists = e.target.value;
-                          setReleaseData((prev) => ({
-                            ...prev,
-                            tracks: updated,
-                          }));
-                        }}
-                        className="w-full bg-transparent border-b border-[#B6B09F]/20 focus:border-[#EAE4D5] outline-none text-[#EAE4D5] text-sm py-1 transition-colors"
-                      />
+                    {/* Replace the existing Artist section inside Reorder.Item */}
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 col-span-1 md:col-span-2">
+                      {/* TRACK PRIMARY ARTISTS */}
+                      <div>
+                        <label className="text-xs text-[#B6B09F] mb-1 block">
+                          Track Primary Artist(s)
+                        </label>
+                        <input
+                          type="text"
+                          value={track.primaryArtists || ""}
+                          placeholder="Main artist name(s), comma separated"
+                          onChange={(e) => {
+                            const updated = [...releaseData.tracks];
+                            updated[index].primaryArtists = e.target.value;
+                            setReleaseData((prev) => ({
+                              ...prev,
+                              tracks: updated,
+                            }));
+                          }}
+                          className="w-full bg-transparent border-b border-[#B6B09F]/20 focus:border-[#EAE4D5] outline-none text-[#EAE4D5] text-sm py-1 transition-colors"
+                        />
+                        <p className="text-[10px] text-[#B6B09F]/50 mt-1">
+                          Appears as "Artist A & Artist B"
+                        </p>
+                      </div>
+
+                      {/* TRACK FEATURED ARTISTS */}
+                      <div>
+                        <label className="text-xs text-[#B6B09F] mb-1 block">
+                          Track Featured Artist(s)
+                        </label>
+                        <input
+                          type="text"
+                          value={track.featuredArtists || ""}
+                          placeholder="Features, comma separated"
+                          onChange={(e) => {
+                            const updated = [...releaseData.tracks];
+                            updated[index].featuredArtists = e.target.value;
+                            setReleaseData((prev) => ({
+                              ...prev,
+                              tracks: updated,
+                            }));
+                          }}
+                          className="w-full bg-transparent border-b border-[#B6B09F]/20 focus:border-[#EAE4D5] outline-none text-[#EAE4D5] text-sm py-1 transition-colors"
+                        />
+                        <p className="text-[10px] text-[#B6B09F]/50 mt-1">
+                          Appears as "Artist A feat. Artist C"
+                        </p>
+                      </div>
                     </div>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <span className="text-xs text-[#B6B09F]">Explicit</span>
@@ -919,34 +998,62 @@ const NewReleaseBuilder = () => {
             </div>
           </div>
 
+          {/* 🚀 UPDATED LEGAL GATE */}
           <div
             className={`p-4 rounded-lg border transition-all ${
-              agreedToTerms
+              hasSigned
                 ? "bg-[#B6B09F]/10 border-[#B6B09F]/30"
                 : "bg-red-500/5 border-red-500/20"
             }`}
           >
-            <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="royalty-agree"
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="mt-1 w-4 h-4 rounded border-[#B6B09F]/40 bg-[#0a0a0a] text-[#EAE4D5] focus:ring-0 cursor-pointer"
-              />
-              <label
-                htmlFor="royalty-agree"
-                className="text-xs leading-relaxed text-[#B6B09F] cursor-pointer"
-              >
-                I confirm I own 100% of the rights to this content. I agree to
-                the{" "}
-                <span className="text-[#EAE4D5] font-bold">
-                  80/20 Royalty Split
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <div className="relative flex items-center justify-center mt-1">
+                <input
+                  type="checkbox"
+                  checked={hasSigned}
+                  onChange={(e) => {
+                    if (e.target.checked && !hasSigned) {
+                      setIsLegalModalOpen(true);
+                    } else {
+                      setHasSigned(false);
+                      setLegalName("");
+                    }
+                  }}
+                  className="w-4 h-4 appearance-none border border-[#B6B09F]/40 rounded bg-[#0a0a0a] checked:bg-[#EAE4D5] checked:border-[#EAE4D5] transition-all cursor-pointer"
+                />
+                {hasSigned && (
+                  <FaCheck className="absolute text-[#0a0a0a] text-[10px] pointer-events-none" />
+                )}
+              </div>
+              <div className="flex-1">
+                <span className="text-xs leading-relaxed text-[#B6B09F] block">
+                  I confirm I own 100% of the rights to this content. I agree to
+                  the{" "}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsLegalModalOpen(true);
+                    }}
+                    className="text-[#EAE4D5] font-bold underline decoration-[#B6B09F]/50 hover:decoration-white transition-all"
+                  >
+                    80/20 Royalty Split & Distribution Agreement
+                  </button>
+                  , where 80% of net receipts are paid to my account.
                 </span>
-                , where 80% of net receipts are paid to my account. I authorize
-                Horme Music to distribute this release to global stores.
-              </label>
-            </div>
+
+                {/* 🚀 SIGNATURE RECEIPT */}
+                {hasSigned && (
+                  <div className="mt-3 bg-green-500/10 border border-green-500/20 rounded px-3 py-2 inline-block">
+                    <p className="text-green-400 text-xs italic flex items-center gap-2">
+                      <FaCheck className="text-[10px]" /> Signed electronically
+                      by:{" "}
+                      <span className="font-bold not-italic">{legalName}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </label>
           </div>
 
           {/* Progress Bar (Shows up during upload) */}
@@ -977,10 +1084,10 @@ const NewReleaseBuilder = () => {
             </button>
 
             <button
-              onClick={() => handleSubmit(false)} // isDraft = false
-              disabled={isSubmitting || !agreedToTerms}
+              onClick={() => handleSubmit(false)}
+              disabled={isSubmitting || !hasSigned}
               className={`flex-[2] py-4 rounded-lg font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-                agreedToTerms && !isSubmitting
+                hasSigned && !isSubmitting
                   ? "bg-[#EAE4D5] text-[#0a0a0a] hover:bg-white"
                   : "bg-[#B6B09F]/10 text-[#B6B09F]/40 cursor-not-allowed"
               }`}
@@ -993,6 +1100,17 @@ const NewReleaseBuilder = () => {
           </div>
         </motion.div>
       )}
+
+      <LegalModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        legalName={legalName}
+        setLegalName={setLegalName}
+        onSign={() => {
+          setHasSigned(true);
+          setIsLegalModalOpen(false);
+        }}
+      />
     </div>
   );
 };

@@ -2,6 +2,11 @@
 import Withdrawal from "../models/Withdrawal.js";
 import User from "../models/User.js";
 import Release from "../models/Release.js";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { s3Client } from "./releaseController.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 // @desc    Get all pending withdrawals
 // @route   GET /api/admin/withdrawals
@@ -94,28 +99,32 @@ export const getAllUsers = async (req, res) => {
 // @access  Private/Admin
 export const verifyUserManually = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          "verification.status": "verified",
+          "verification.method": "manual_admin",
+          "verification.verifiedAt": new Date(),
+        },
+      },
+      { new: true, runValidators: false }, // 👈 This prevents the 500 error
+    );
+
+    if (!updatedUser)
       return res.status(404).json({ message: "User not found" });
-    }
 
-    // Initialize if it doesn't exist
-    if (!user.verification) {
-      user.verification = { status: "unverified", method: "none" };
-    }
-
-    user.verification.status = "verified";
-    user.verification.method = "manual_admin"; // So you know an admin forced this
-    await user.save();
-
-    res.status(200).json({ message: "User manually verified successfully" });
+    res.status(200).json({
+      message: "User manually verified successfully",
+      user: updatedUser,
+    });
   } catch (error) {
+    console.error("Manual Verify Error:", error);
     res
       .status(500)
       .json({ message: "Error updating user verification status" });
   }
 };
-
 // ==========================================
 // RELEASE QUEUE
 // ==========================================
@@ -125,12 +134,38 @@ export const verifyUserManually = async (req, res) => {
 // @access  Private/Admin
 export const getPendingReleases = async (req, res) => {
   try {
-    const pendingReleases = await Release.find({ status: "pending" })
-      // 🚀 FIXED: Changed 'artistId' to 'primaryArtist' to match your schema
-      .populate("primaryArtist", "stageName email")
-      .sort({ createdAt: 1 });
+    // 1. Fetch releases (use .lean() so we can modify the objects easily)
+    const releases = await Release.find({ status: "pending" })
+      .populate("releaseOwner", "stageName email")
+      .sort({ createdAt: 1 })
+      .lean();
 
-    res.status(200).json(pendingReleases);
+    // 2. Map through each release and sign the audio/artwork keys
+    const signedReleases = await Promise.all(
+      releases.map(async (release) => {
+        // Sign every track's fileUrl
+        const signedTracks = await Promise.all(
+          release.tracks.map(async (track) => {
+            if (!track.fileKey) return track;
+
+            const audioCommand = new GetObjectCommand({
+              Bucket: process.env.AWS_BUCKET_NAME,
+              Key: track.fileKey, // This is why saving the Key was important!
+            });
+
+            const freshUrl = await getSignedUrl(s3Client, audioCommand, {
+              expiresIn: 3600, // Link valid for 1 hour
+            });
+
+            return { ...track, fileUrl: freshUrl };
+          }),
+        );
+
+        return { ...release, tracks: signedTracks };
+      }),
+    );
+
+    res.status(200).json(signedReleases);
   } catch (error) {
     console.error("ERROR IN GET PENDING RELEASES:", error);
     res.status(500).json({ message: "Error fetching pending releases" });
@@ -141,7 +176,7 @@ export const getPendingReleases = async (req, res) => {
 // @route   PUT /api/admin/releases/:id
 // @access  Private/Admin
 export const processRelease = async (req, res) => {
-  const { status } = req.body; // status = 'approved' or 'rejected'
+  const { status, reason } = req.body; // Expecting { status: 'rejected', reason: 'Artwork is blurry' }
 
   try {
     const release = await Release.findById(req.params.id);
@@ -151,14 +186,25 @@ export const processRelease = async (req, res) => {
     }
 
     release.status = status;
+
+    // Save the reason if it's a rejection
+    if (status === "rejected") {
+      release.rejectionReason = reason || "No reason provided.";
+    } else {
+      release.rejectionReason = ""; // Clear reason if approved
+    }
+
     await release.save();
 
-    res.status(200).json({ message: `Release marked as ${status}` });
+    res.status(200).json({
+      message: `Release marked as ${status}`,
+      release,
+    });
   } catch (error) {
+    console.error("Process Release Error:", error);
     res.status(500).json({ message: "Error processing the release" });
   }
 };
-
 // @desc    Get dashboard stats for Admin
 // @route   GET /api/admin/stats
 // @access  Private/Admin

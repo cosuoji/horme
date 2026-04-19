@@ -83,7 +83,7 @@ export default function Homepage() {
   useSEO({
     title: "Home",
     description:
-      "Horme Music Worldwide is a music agency based in Lagos, Nigeria. We specialize in music production, marketing, and distribution.",
+      "Motion Works is a music agency based in Lagos, Nigeria. We specialize in music production, marketing, and distribution.",
   });
 
   return (
@@ -126,9 +126,10 @@ export default function Homepage() {
           </motion.div>
 
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold text-[#EAE4D5] mb-8 tracking-tighter leading-none">
-            HORME MUSIC <br />
+            MOTION
+            <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#EAE4D5] via-[#B6B09F] to-[#EAE4D5]">
-              WORLDWIDE
+              WORKS
             </span>
           </h1>
 

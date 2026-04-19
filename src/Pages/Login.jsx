@@ -3,20 +3,23 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUserStore } from "../store/useUserStore";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react"; // Install lucide-react if you haven't
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { login, loading } = useUserStore();
+  const { login, loading, error } = useUserStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const success = await login(email, password);
 
     if (success) {
-      // 🚀 Get the fresh user state from the store after login
       const user = useUserStore.getState().user;
+      toast.success(`Welcome back, ${user?.stageName || "Artist"}`);
 
       if (user?.role === "admin") {
         navigate("/admin");
@@ -24,10 +27,10 @@ const Login = () => {
         navigate("/dashboard");
       }
     } else {
-      toast.error("Login failed");
+      const errorMessage = useUserStore.getState().error;
+      toast.error(errorMessage || "Login failed");
     }
   };
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-[#0a0a0a] px-4">
       <motion.div
@@ -60,28 +63,37 @@ const Login = () => {
             />
           </div>
 
-          <div>
-            {/* 👇 ADDED flex wrapper here to place anchor on the right */}
+          <div className="relative">
             <div className="flex justify-between items-center mb-2">
               <label className="block text-[#EAE4D5] text-sm font-medium">
                 Password
               </label>
               <Link
                 to="/forgot-password"
+                size="xs"
                 className="text-[#B6B09F] text-xs hover:text-[#EAE4D5] transition-colors"
               >
                 Forgot Password?
               </Link>
             </div>
 
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-transparent border border-[#B6B09F]/40 rounded-lg text-[#EAE4D5] placeholder-[#B6B09F]/50 focus:border-[#EAE4D5] focus:outline-none transition-colors"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-transparent border border-[#B6B09F]/40 rounded-lg text-[#EAE4D5] placeholder-[#B6B09F]/50 focus:border-[#EAE4D5] focus:outline-none transition-colors pr-12"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B6B09F] hover:text-[#EAE4D5] transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button

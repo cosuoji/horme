@@ -128,15 +128,27 @@ const ReleasesPage = () => {
                     {new Date(release.releaseDate).toLocaleDateString()}
                   </p>
                 </div>
-                {release.status === "draft" && (
+                {(release.status === "draft" ||
+                  release.status === "rejected") && (
                   <button
                     onClick={() =>
                       navigate(`/dashboard/releases/edit/${release._id}`)
                     }
                     className="px-4 py-2 text-xs font-bold border border-[#B6B09F]/20 text-[#EAE4D5] rounded hover:bg-[#B6B09F]/10 transition-all"
                   >
-                    Continue
+                    {release.status === "draft" ? "Continue" : "Fix & Resubmit"}
                   </button>
+                )}
+
+                {release.status === "rejected" && release.rejectionReason && (
+                  <div className="mt-2 p-3 bg-red-500/5 border border-red-500/20 rounded-lg">
+                    <p className="text-xs text-red-400 font-semibold uppercase tracking-wider mb-1">
+                      Issue Found:
+                    </p>
+                    <p className="text-sm text-[#B6B09F] italic">
+                      "{release.rejectionReason}"
+                    </p>
+                  </div>
                 )}
               </div>
             ))}

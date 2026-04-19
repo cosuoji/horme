@@ -8,9 +8,10 @@ const userSchema = new mongoose.Schema(
     stageName: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    phoneNumber: { type: String },
     role: {
       type: String,
-      enum: ["artist", "admin", "scout"],
+      enum: ["artist", "admin", "scout", "producer"],
       default: "artist",
     },
     isVerified: { type: Boolean, default: false },

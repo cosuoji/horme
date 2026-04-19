@@ -19,6 +19,8 @@ import PrComms from "./Pages/PrComms";
 import Radio from "./Pages/Radio";
 import Label from "./Pages/Label";
 import ArtistPage from "./Components/ArtistPage";
+import Terms from "./Pages/Terms";
+import PrivacyPolicy from "./Pages/PrivacyPolicy";
 
 // Layouts
 import Layout from "./Components/Layout";
@@ -44,6 +46,7 @@ import WalletPage from "./Pages/Dashboard/WalletPage";
 import ReleasesPage from "./Pages/Dashboard/ReleasesPage";
 import ArtistProfileForm from "./Pages/Dashboard/ArtistProfileForm";
 import NewReleaseBuilder from "./Pages/Dashboard/NewReleaseBuilder";
+import Index from "./Components/ReleaseBuilder/Index";
 
 //Admin routes
 import AdminOverview from "./Pages/Admin/AdminOverview";
@@ -152,12 +155,16 @@ const AppContent = () => {
               <Route path="wallet" element={<WalletPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="releases" element={<ReleasesPage />} />
-              <Route path="releases/new" element={<NewReleaseBuilder />} />
-              <Route path="releases/edit/:id" element={<NewReleaseBuilder />} />
+              {/* <Route path="releases/new" element={<NewReleaseBuilder />} />*/}
+              <Route path="releases/new" element={<Index />} />
+              <Route path="releases/edit/:id" element={<Index />} />
+              {/* <Route path="releases/edit/:id" element={<NewReleaseBuilder />} />*/}
             </Route>
 
             {/* Catch-all route at absolute bottom */}
             <Route path="*" element={<Navigate to={"/"} />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
           </Routes>
         </Layout>
       </main>

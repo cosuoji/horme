@@ -7,7 +7,7 @@ export default function Contact() {
   useSEO({
     title: "Contact Us",
     description:
-      "Get in touch with Horme Music Worldwide. We're here to help you with your music needs.",
+      "Get in touch with Motion Works. We're here to help you with your music needs.",
   });
 
   return (

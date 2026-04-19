@@ -92,6 +92,12 @@ const ArtistProfileForm = () => {
     }));
   };
 
+  const isValidPhone = (phone) => {
+    if (!phone) return true; // Optional field
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+    return phoneRegex.test(phone.replace(/\s/g, "")); // Remove spaces before checking
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -125,10 +131,22 @@ const ArtistProfileForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const isValidPhone = (phone) => {
+      if (!phone) return true; // Optional field
+      const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+      return phoneRegex.test(phone.replace(/\s/g, "")); // Remove spaces before checking
+    };
+
     const urlFields = [
       { category: "dspLinks", label: "DSP Links" },
       { category: "additionalInfo", label: "Social Links" },
     ];
+
+    if (formData.phoneNumber && !isValidPhone(formData.phoneNumber)) {
+      return toast.error(
+        "Please enter a valid phone number including country code.",
+      );
+    }
 
     for (const group of urlFields) {
       const categoryData = formData[group.category];
@@ -253,6 +271,29 @@ const ArtistProfileForm = () => {
                 className={inputStyle}
               />
             </div>
+            {/* Add this inside your "General Information" card */}
+            <div>
+              <label className="block text-[#EAE4D5] text-sm mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber || ""}
+                onChange={handleChange}
+                placeholder="+234 800 000 0000"
+                className={`${inputStyle} ${
+                  formData.phoneNumber && !isValidPhone(formData.phoneNumber)
+                    ? "border-red-500/50"
+                    : ""
+                }`}
+              />
+              {formData.phoneNumber && !isValidPhone(formData.phoneNumber) && (
+                <p className="text-red-400 text-[10px] mt-1 uppercase tracking-widest">
+                  Invalid phone format (e.g. +234...)
+                </p>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[#EAE4D5] text-sm mb-2">
@@ -312,7 +353,7 @@ const ArtistProfileForm = () => {
                 value={formData.pLine || ""}
                 onChange={handleChange}
                 className={inputStyle}
-                placeholder="℗ 2026 Horme Music"
+                placeholder="℗ 2026 Motion Works"
               />
             </div>
           </div>

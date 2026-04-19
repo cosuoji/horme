@@ -14,11 +14,11 @@ const emailWrapper = (content) => `
   <div style="background-color: #050505; color: #B6B09F; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px 20px; text-align: center;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #0a0a0a; border: 1px solid rgba(182, 176, 159, 0.1); border-radius: 12px; padding: 40px; text-align: left;">
       <div style="text-align: center; margin-bottom: 30px;">
-        <img src="${companyLogo}" alt="Horme Music" style="height: 40px; width: auto;" />
+        <img src="${companyLogo}" alt="Motion Works" style="height: 40px; width: auto;" />
       </div>
       ${content}
       <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(182, 176, 159, 0.1); text-align: center; font-size: 12px; color: rgba(182, 176, 159, 0.5);">
-        <p>© 2026 Horme Music Worldwide. All Rights Reserved.</p>
+        <p>© 2026 Motion Works. All Rights Reserved.</p>
         <p>This is an automated message, please do not reply directly to this email.</p>
       </div>
     </div>
@@ -31,7 +31,7 @@ export const sendVerificationEmail = async (email, name, token) => {
 
   const html = emailWrapper(`
     <h1 style="color: #EAE4D5; font-size: 24px; font-weight: bold; margin-bottom: 15px;">Welcome to the Roster, ${name}.</h1>
-    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Thank you for applying to join Horme Music Worldwide. To complete your account setup and access the artist portal, please verify your email address.</p>
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Thank you for applying to join Motion Works. To complete your account setup and access the artist portal, please verify your email address.</p>
 
     <div style="text-align: center; margin: 35px 0;">
       <a href="${verificationUrl}" style="background-color: #EAE4D5; color: #0a0a0a; padding: 14px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 14px;">Verify Email Address</a>

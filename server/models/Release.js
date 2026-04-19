@@ -1,26 +1,37 @@
 import mongoose from "mongoose";
 
-// Helper function to check if a field should be mandatory
 const isNotDraft = function () {
-  return this.status !== "draft";
+  // If it's a sub-document (a track), we check the parent's status
+  const parent = this.ownerDocument ? this.ownerDocument() : this;
+  return parent.status !== "draft";
 };
-
 // 1. Define the Track Sub-Schema
 const trackSchema = new mongoose.Schema(
   {
-    // In a draft, we might not even have a title yet
     title: {
       type: String,
       required: isNotDraft,
       trim: true,
     },
-    // Files are definitely missing in early drafts
     fileUrl: { type: String, required: isNotDraft },
     fileKey: { type: String, required: isNotDraft },
     isrc: { type: String, trim: true },
     explicit: { type: Boolean, default: false },
     trackNumber: { type: Number, required: isNotDraft },
 
+    // 🚀 NEW: Track-level Primary Artists
+    primaryArtists: [
+      {
+        name: { type: String, required: true, trim: true },
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          default: null,
+        },
+      },
+    ],
+
+    // Existing Featured Artists
     featuredArtists: [
       {
         name: { type: String, required: true, trim: true },
@@ -31,10 +42,20 @@ const trackSchema = new mongoose.Schema(
         },
       },
     ],
+    splits: [
+      {
+        name: { type: String, required: isNotDraft, trim: true },
+        role: {
+          type: String,
+          enum: ["Primary", "Featured", "Producer", "Writer"],
+          required: isNotDraft, // 👈 Change from true to isNotDraft
+        },
+        percentage: { type: Number, required: isNotDraft, min: 0, max: 100 }, // 👈 Change from true to isNotDraft
+      },
+    ],
   },
   { timestamps: true },
 );
-
 // 2. The Main Merged Release Schema
 const releaseSchema = new mongoose.Schema(
   {
@@ -45,12 +66,22 @@ const releaseSchema = new mongoose.Schema(
       required: isNotDraft, // Can be selected later
     },
     artwork: { type: String, required: isNotDraft },
-
-    primaryArtist: {
+    releaseOwner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true, // Always need to know who owns the draft
+      required: true,
     },
+
+    primaryArtists: [
+      {
+        name: { type: String, required: true, trim: true },
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          default: null,
+        },
+      },
+    ],
 
     featuredArtists: [
       {
@@ -83,14 +114,16 @@ const releaseSchema = new mongoose.Schema(
       enum: ["draft", "pending", "distributed", "takedown", "rejected"],
       default: "draft",
     },
-    rejectionReason: { type: String },
-
-    contractSplit: {
-      artistPercentage: { type: Number, default: 0.8 },
-      labelPercentage: { type: Number, default: 0.2 },
-    },
+    rejectionReason: { type: String, default: "" },
 
     recoupableExpenses: { type: Number, default: 0 },
+    legalConsent: {
+      agreed: { type: Boolean, default: false },
+      signedName: String,
+      ipAddress: String, // Good for legal proof
+      agreedAt: Date,
+      version: { type: String, default: "1.0.0" }, // In case you change terms later
+    },
   },
   { timestamps: true },
 );

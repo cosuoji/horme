@@ -11,9 +11,9 @@ import {
   FaBars,
   FaTimes,
   FaUserCircle,
-  FaNotesMedical,
 } from "react-icons/fa";
 import SupportModal from "../Components/SupportModal";
+import { ScreenShare } from "lucide-react";
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -44,7 +44,7 @@ const DashboardLayout = () => {
       {/* MOBILE HEADER */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#0a0a0a] border-b border-[#B6B09F]/10 flex items-center justify-between px-6 z-50">
         <Link to="/dashboard">
-          <img src={logo} alt="Horme Music" className="h-8 w-auto" />
+          <img src={logo} alt="Motion Works" className="h-8 w-auto" />
         </Link>
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -67,7 +67,7 @@ const DashboardLayout = () => {
         <div className="px-6 py-8">
           {/* Logo */}
           <Link to="/dashboard" className="hidden md:block mb-10">
-            <img src={logo} alt="Horme Music" className="h-10 w-auto" />
+            <img src={logo} alt="Motion Works" className="h-10 w-auto" />
           </Link>
 
           {/* Artist Profile Quick View */}
@@ -107,8 +107,8 @@ const DashboardLayout = () => {
               onClick={() => setIsSupportOpen(true)}
               className="w-full text-left px-4 py-2 text-[#B6B09F] hover:text-[#EAE4D5] text-sm"
             >
-              <FaNotesMedical className="inline-block mr-2" />
-              Request Label Services
+              <ScreenShare className="inline-block mr-2" />
+              <span className="text-lg">Request Label Services</span>
             </button>
 
             {/* Render the modal at the bottom of the layout */}
