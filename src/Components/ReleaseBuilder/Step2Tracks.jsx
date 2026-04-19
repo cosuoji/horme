@@ -14,7 +14,6 @@ import { toast } from "react-hot-toast";
 import ArtistsTab from "./Step2Tabs/ArtistsTab";
 import WritersTab from "./Step2Tabs/WritersTab";
 import CreditsTab from "./Step2Tabs/CreditsTab";
-import SplitsTab from "./Step2Tabs/SplitsTab";
 
 const Step2Tracks = ({
   data,
