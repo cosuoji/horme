@@ -5,6 +5,10 @@ import Release from "../models/Release.js";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "./releaseController.js";
+import {
+  sendReleaseApprovalEmail,
+  sendReleaseRejectionEmail,
+} from "../utils/emailService.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -175,11 +179,15 @@ export const getPendingReleases = async (req, res) => {
 // @desc    Approve or Reject a release
 // @route   PUT /api/admin/releases/:id
 // @access  Private/Admin
+
 export const processRelease = async (req, res) => {
-  const { status, reason } = req.body; // Expecting { status: 'rejected', reason: 'Artwork is blurry' }
+  const { status, reason } = req.body;
 
   try {
-    const release = await Release.findById(req.params.id);
+    // We populate the owner to get their email and name for the notification
+    const release = await Release.findById(req.params.id).populate(
+      "releaseOwner",
+    );
 
     if (!release) {
       return res.status(404).json({ message: "Release not found" });
@@ -187,14 +195,36 @@ export const processRelease = async (req, res) => {
 
     release.status = status;
 
-    // Save the reason if it's a rejection
     if (status === "rejected") {
       release.rejectionReason = reason || "No reason provided.";
     } else {
-      release.rejectionReason = ""; // Clear reason if approved
+      release.rejectionReason = "";
     }
 
     await release.save();
+
+    // --- 📧 Trigger Email Notifications ---
+    const ownerEmail = release.releaseOwner?.email;
+    const ownerName = release.releaseOwner?.stageName || "Artist";
+
+    if (ownerEmail) {
+      try {
+        if (status === "distributed") {
+          // Or "approved", matching your button value
+          await sendReleaseApprovalEmail(ownerEmail, ownerName, release.title);
+        } else if (status === "rejected") {
+          await sendReleaseRejectionEmail(
+            ownerEmail,
+            ownerName,
+            release.title,
+            release.rejectionReason,
+          );
+        }
+      } catch (emailError) {
+        // We log the error but don't stop the request; the release is already saved
+        console.error("Failed to send notification email:", emailError);
+      }
+    }
 
     res.status(200).json({
       message: `Release marked as ${status}`,
@@ -205,6 +235,7 @@ export const processRelease = async (req, res) => {
     res.status(500).json({ message: "Error processing the release" });
   }
 };
+
 // @desc    Get dashboard stats for Admin
 // @route   GET /api/admin/stats
 // @access  Private/Admin

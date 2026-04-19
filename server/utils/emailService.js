@@ -70,3 +70,55 @@ export const sendForgotPasswordEmail = async (email, token) => {
     html,
   });
 };
+
+// 📩 Send Release Approval Email
+export const sendReleaseApprovalEmail = async (email, name, releaseTitle) => {
+  const html = emailWrapper(`
+    <h1 style="color: #EAE4D5; font-size: 24px; font-weight: bold; margin-bottom: 15px;">Your Release is Approved.</h1>
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Excellent work, ${name}. Your release <strong>"${releaseTitle}"</strong> has been reviewed and approved for distribution.</p>
+
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Our team is now delivering your music to digital service platforms worldwide. You will receive further updates once your store links are ready.</p>
+
+    <div style="text-align: center; margin: 35px 0;">
+      <a href="${process.env.FRONTEND_URL}/dashboard/releases" style="background-color: #EAE4D5; color: #0a0a0a; padding: 14px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 14px;">View in Dashboard</a>
+    </div>
+  `);
+
+  return await resend.emails.send({
+    from: "Horme Music <info@hormemusic.com>",
+    to: email,
+    subject: `Approved: ${releaseTitle} | Horme Music`,
+    html,
+  });
+};
+
+// 📩 Send Release Rejection Email
+export const sendReleaseRejectionEmail = async (
+  email,
+  name,
+  releaseTitle,
+  reason,
+) => {
+  const html = emailWrapper(`
+    <h1 style="color: #EAE4D5; font-size: 24px; font-weight: bold; margin-bottom: 15px;">Action Required: ${releaseTitle}</h1>
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Hello ${name}, thank you for your submission. After reviewing <strong>"${releaseTitle}"</strong>, our moderation team found some issues that need to be addressed before we can proceed.</p>
+
+    <div style="background-color: rgba(182, 176, 159, 0.05); border-left: 4px solid #EAE4D5; padding: 20px; margin-bottom: 25px;">
+      <p style="margin: 0; font-size: 14px; color: black; font-weight: bold;">Reason for rejection:</p>
+      <p style="margin: 10px 0 0 0; font-size: 15px; color: #000000; line-height: 1.5;">${reason}</p>
+    </div>
+
+    <p style="font-size: 14px; line-height: 1.6; margin-bottom: 25px;">Please log in to your dashboard to edit your release and resubmit for review.</p>
+
+    <div style="text-align: center; margin: 35px 0;">
+      <a href="${process.env.FRONTEND_URL}/dashboard/releases" style="background-color: transparent; border: 1px solid #EAE4D5; color: #EAE4D5; padding: 14px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 14px;">Edit Release</a>
+    </div>
+  `);
+
+  return await resend.emails.send({
+    from: "Horme Music <info@hormemusic.com>",
+    to: email,
+    subject: `Update regarding your submission: ${releaseTitle}`,
+    html,
+  });
+};
