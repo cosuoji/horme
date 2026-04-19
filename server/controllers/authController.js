@@ -106,7 +106,7 @@ export const refreshToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      return res.status(401).json({ message: "No refresh token provided" });
+      return res.status(401).json({ message: "Please login again" });
     }
 
     // Verify the refresh token

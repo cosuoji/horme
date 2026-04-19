@@ -11,6 +11,10 @@ import {
 } from "react-icons/fa";
 import axios from "../../lib/axios";
 import { toast } from "react-hot-toast";
+import ArtistsTab from "./Step2Tabs/ArtistsTab";
+import WritersTab from "./Step2Tabs/WritersTab";
+import CreditsTab from "./Step2Tabs/CreditsTab";
+import SplitsTab from "./Step2Tabs/SplitsTab";
 
 const Step2Tracks = ({
   data,
@@ -21,6 +25,9 @@ const Step2Tracks = ({
   isSubmitting,
 }) => {
   const [uploadProgress, setUploadProgress] = useState({});
+  const [editingTrackIndex, setEditingTrackIndex] = useState(null);
+  const [activeTab, setActiveTab] = useState("artists"); // "artists", "writers", "credits", "splits"
+
   const uploadTrackAudio = async (trackId, file) => {
     try {
       // 1. GET THE PRESIGNED URL (Send JSON, not FormData)
@@ -66,35 +73,49 @@ const Step2Tracks = ({
   };
 
   // Handle file uploads and create track objects
+
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
 
-    const newTracks = files.map((file, index) => ({
-      id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      title: file.name.replace(/\.[^/.]+$/, ""),
-      trackNumber: data.tracks.length + index + 1,
-      file: file,
-      isrc: "",
-      explicit: false,
-      // CRITICAL: Explicitly pull from the current state
-      primaryArtists: data.primaryArtists || "Primary Artist",
-      featuredArtists: data.featuredArtists || "Featured Artist",
-      splits: [
-        {
-          name: data.primaryArtists || "Primary Artist",
-          role: "Primary",
-          percentage: 100,
-        },
-      ],
-    }));
+    const newTracks = files.map((file, index) => {
+      // 1. Generate a UNIQUE ID for EACH track inside the loop
+      const trackId = `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+      // 2. Initialize progress for this specific ID
+      setUploadProgress((prev) => ({ ...prev, [trackId]: 0 }));
+
+      return {
+        id: trackId, // Unique to this specific file
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        trackNumber: data.tracks.length + index + 1,
+        file: file,
+        isrc: "",
+        explicit: false,
+        primaryArtists: Array.isArray(data.primaryArtists)
+          ? data.primaryArtists
+          : [{ name: data.primaryArtists || "Primary Artist", user: null }],
+        featuredArtists: [],
+        writers: [],
+        additionalCredits: [],
+        splits: [
+          {
+            name: data.primaryArtists?.[0]?.name || "Primary Artist",
+            role: "Primary",
+            percentage: 100,
+          },
+        ],
+      };
+    });
+
+    // Update state with the array of unique tracks
     setData((prev) => ({
       ...prev,
       tracks: [...prev.tracks, ...newTracks],
     }));
 
-    newTracks.forEach((track, i) => {
-      uploadTrackAudio(track.id, files[i]);
+    // Trigger individual uploads
+    newTracks.forEach((track) => {
+      uploadTrackAudio(track.id, track.file);
     });
   };
 
@@ -156,6 +177,17 @@ const Step2Tracks = ({
     });
   };
 
+  const updateTrackMetadata = (field, newValue) => {
+    setData((prev) => {
+      const updatedTracks = [...prev.tracks];
+      updatedTracks[editingTrackIndex] = {
+        ...updatedTracks[editingTrackIndex],
+        [field]: newValue,
+      };
+      return { ...prev, tracks: updatedTracks };
+    });
+  };
+
   // Remove a track
   const removeTrack = (trackId) => {
     setData((prev) => ({
@@ -167,6 +199,59 @@ const Step2Tracks = ({
   const isAnyTrackUploading = Object.values(uploadProgress).some(
     (p) => p > 0 && p < 100,
   );
+
+  const applyToAllTracks = (field) => {
+    const valueToCopy = data.tracks[editingTrackIndex][field];
+
+    // Ensure we deep copy the array so tracks don't share the same reference
+    const clonedValue = JSON.parse(JSON.stringify(valueToCopy));
+
+    setData((prev) => ({
+      ...prev,
+      tracks: prev.tracks.map((t) => ({
+        ...t,
+        [field]: clonedValue,
+      })),
+    }));
+  };
+
+  // Helper to close and reset
+  const closeMetadataModal = () => {
+    setEditingTrackIndex(null);
+    setActiveTab("artists");
+  };
+
+  const applyCreditsToAll = () => {
+    const currentCredits = data.tracks[editingTrackIndex].additionalCredits;
+
+    // Clone to avoid reference issues
+    const clonedCredits = JSON.parse(JSON.stringify(currentCredits));
+
+    setData((prev) => ({
+      ...prev,
+      tracks: prev.tracks.map((track) => ({
+        ...track,
+        additionalCredits: clonedCredits,
+      })),
+    }));
+
+    toast.success("Credits synced across all tracks");
+  };
+
+  const addCredit = () => {
+    const updatedTracks = [...data.tracks];
+    updatedTracks[editingTrackIndex].additionalCredits.push({
+      name: "",
+      role: "",
+    });
+    setData({ ...data, tracks: updatedTracks });
+  };
+
+  const removeCredit = (creditIndex) => {
+    const updatedTracks = [...data.tracks];
+    updatedTracks[editingTrackIndex].additionalCredits.splice(creditIndex, 1);
+    setData({ ...data, tracks: updatedTracks });
+  };
 
   // Styles inherited from Step 1
   const inputStyle =
@@ -243,100 +328,49 @@ const Step2Tracks = ({
               <Reorder.Item
                 key={track.id}
                 value={track}
-                className="bg-[#0a0a0a] border border-[#B6B09F]/10 rounded-xl p-6 relative group"
+                className="bg-[#0a0a0a] border border-[#B6B09F]/10 rounded-xl p-4 relative group hover:border-[#B6B09F]/30 transition-all"
               >
-                <div className="flex items-start gap-6">
-                  {/* Drag Handle & Number */}
-                  {uploadProgress[track.id] && (
-                    <span>{uploadProgress[track.id]}%</span>
-                  )}
-                  <div className="flex flex-col items-center gap-4 mt-2">
-                    <div className="cursor-grab active:cursor-grabbing text-[#B6B09F]/20 hover:text-[#EAE4D5] transition-colors">
-                      <FaBars />
+                <div className="flex items-center gap-6">
+                  {/* Drag & Number */}
+                  <div className="flex items-center gap-4">
+                    <div className="cursor-grab active:cursor-grabbing text-[#B6B09F]/20 hover:text-[#EAE4D5]">
+                      <FaBars size={14} />
                     </div>
-                    <span className="text-[10px] font-black text-[#B6B09F]/20">
+                    <span className="text-[10px] font-black text-[#B6B09F]/20 w-4">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                   </div>
 
-                  {/* Form Content */}
-                  <div className="flex-1 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className={labelStyle}>Track Title</label>
-                        <input
-                          type="text"
-                          value={track.title}
-                          onChange={(e) =>
-                            updateTrack(index, "title", e.target.value)
-                          }
-                          className={inputStyle}
-                        />
-                      </div>
-                      <div>
-                        <label className={labelStyle}>ISRC (Optional)</label>
-                        <input
-                          type="text"
-                          value={track.isrc}
-                          placeholder="Leave blank to auto-generate"
-                          onChange={(e) =>
-                            updateTrack(index, "isrc", e.target.value)
-                          }
-                          className={inputStyle}
-                        />
-                      </div>
+                  {/* Title & Progress */}
+                  <div className="flex-1 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-[#EAE4D5] text-sm font-medium tracking-wide">
+                        {track.title || "Untitled Track"}
+                      </h3>
+                      {uploadProgress[track.id] < 100 && (
+                        <div className="w-32 h-1 bg-[#B6B09F]/10 rounded-full mt-2 overflow-hidden">
+                          <div
+                            className="h-full bg-[#EAE4D5] transition-all duration-300"
+                            style={{ width: `${uploadProgress[track.id]}%` }}
+                          />
+                        </div>
+                      )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className={labelStyle}>Primary Artist(s)</label>
-                        <input
-                          type="text"
-                          value={track.primaryArtists}
-                          onChange={(e) =>
-                            updateTrack(index, "primaryArtists", e.target.value)
-                          }
-                          className={inputStyle}
-                        />
-                      </div>
-                      <div>
-                        <label className={labelStyle}>Featured Artist(s)</label>
-                        <input
-                          type="text"
-                          value={track.featuredArtists}
-                          placeholder="e.g. Burna Boy"
-                          onChange={(e) =>
-                            updateTrack(
-                              index,
-                              "featuredArtists",
-                              e.target.value,
-                            )
-                          }
-                          className={inputStyle}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
-                      <label className="flex items-center gap-3 cursor-pointer group/explicit">
-                        <input
-                          type="checkbox"
-                          checked={track.explicit}
-                          onChange={(e) =>
-                            updateTrack(index, "explicit", e.target.checked)
-                          }
-                          className="w-4 h-4 accent-[#EAE4D5] bg-transparent border-[#B6B09F]/20 rounded"
-                        />
-                        <span className="text-[10px] uppercase tracking-widest text-[#B6B09F] group-hover/explicit:text-[#EAE4D5] transition-colors">
-                          Explicit Content
-                        </span>
-                      </label>
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => setEditingTrackIndex(index)} // We'll define this state
+                        className="px-4 py-2 border border-[#B6B09F]/20 rounded-full text-[9px] uppercase tracking-[0.2em] text-[#B6B09F] hover:text-[#EAE4D5] hover:border-[#EAE4D5] transition-all"
+                      >
+                        Edit Track Info
+                      </button>
 
                       <button
                         onClick={() => removeTrack(track.id)}
-                        className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-red-500/40 hover:text-red-500 transition-colors"
+                        className="p-2 text-red-500/20 hover:text-red-500 transition-colors"
                       >
-                        <FaTrash size={10} /> Remove Track
+                        <FaTrash size={12} />
                       </button>
                     </div>
                   </div>
@@ -372,10 +406,113 @@ const Step2Tracks = ({
             }
             className="flex-1 md:flex-none px-12 py-4 bg-[#EAE4D5] text-[#0a0a0a] font-black text-xs uppercase tracking-[0.2em] rounded-full hover:bg-white hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 shadow-xl disabled:opacity-20 disabled:grayscale"
           >
-            Review Release <FaArrowRight size={10} />
+            {isAnyTrackUploading ? (
+              <span className="flex items-center gap-2">
+                Uploading Tracks...{" "}
+                <div className="w-3 h-3 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+              </span>
+            ) : (
+              <>
+                Review Release <FaArrowRight size={10} />
+              </>
+            )}
           </button>
         </div>
       </footer>
+
+      {/* METADATA MODAL */}
+      {editingTrackIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={closeMetadataModal}
+            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          />
+
+          {/* Modal Content */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative bg-[#050505] border border-[#B6B09F]/20 rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+          >
+            {/* HEADER */}
+            <header className="p-6 border-b border-[#B6B09F]/10 flex justify-between items-center bg-[#0a0a0a]">
+              <div>
+                <span className="text-[10px] text-[#B6B09F]/40 uppercase tracking-[0.3em] mb-1 block">
+                  Track Metadata — {editingTrackIndex + 1} of{" "}
+                  {data.tracks.length}
+                </span>
+                <h2 className="text-xl font-serif text-[#EAE4D5]">
+                  {data.tracks[editingTrackIndex].title || "Untitled Track"}
+                </h2>
+              </div>
+              <button
+                onClick={closeMetadataModal}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/5 text-[#B6B09F] transition-colors"
+              >
+                <FaPlus className="rotate-45" /> {/* Using FaPlus as an 'X' */}
+              </button>
+            </header>
+
+            {/* TAB NAVIGATION */}
+            <nav className="flex px-6 border-b border-[#B6B09F]/10 bg-[#0a0a0a] overflow-x-auto no-scrollbar">
+              {["artists", "writers", "credits"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`py-4 px-6 text-[10px] uppercase tracking-[0.2em] font-bold border-b-2 transition-all whitespace-nowrap ${
+                    activeTab === tab
+                      ? "border-[#EAE4D5] text-[#EAE4D5]"
+                      : "border-transparent text-[#B6B09F]/30 hover:text-[#B6B09F]"
+                  }`}
+                >
+                  {tab === "artists" && "Artist Roles"}
+                  {tab === "writers" && "Writer Roles"}
+                  {tab === "credits" && "Additional Credits"}
+                </button>
+              ))}
+            </nav>
+            {/* DYNAMIC TAB CONTENT */}
+            <div className="flex-1 overflow-y-auto p-8 bg-[#050505] custom-scrollbar">
+              {activeTab === "artists" && (
+                <ArtistsTab
+                  track={data.tracks[editingTrackIndex]}
+                  onUpdate={updateTrackMetadata}
+                  onApplyToAll={applyToAllTracks}
+                />
+              )}
+
+              {activeTab === "writers" && (
+                <WritersTab
+                  track={data.tracks[editingTrackIndex]}
+                  onUpdate={updateTrackMetadata}
+                  onApplyToAll={applyToAllTracks}
+                />
+              )}
+
+              {activeTab === "credits" && (
+                <CreditsTab
+                  track={data.tracks[editingTrackIndex]}
+                  onUpdate={updateTrackMetadata}
+                  onApplyToAll={applyToAllTracks}
+                />
+              )}
+            </div>
+
+            {/* FOOTER */}
+            <footer className="p-6 border-t border-[#B6B09F]/10 bg-[#0a0a0a] flex justify-end">
+              <button
+                onClick={closeMetadataModal}
+                className="px-8 py-3 bg-[#EAE4D5] text-black text-[10px] font-black uppercase tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all"
+              >
+                Confirm Details
+              </button>
+            </footer>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };

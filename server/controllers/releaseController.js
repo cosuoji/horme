@@ -89,18 +89,36 @@ export const createRelease = async (req, res) => {
     // 1. CONDITIONAL VALIDATION
     // Only run strict checks if the user is actually SUBMITTING (not drafting)
     if (!isDraft) {
-      if (
-        !releaseTitle ||
-        !releaseType ||
-        !artworkUrl ||
-        !releaseDate ||
-        !genre ||
-        !tracks ||
-        tracks.length === 0
-      ) {
+      const missingFields = [];
+
+      // Release-Level Checks
+      if (!releaseTitle) missingFields.push("Release Title");
+      if (!releaseType) missingFields.push("Release Type");
+      if (!artworkUrl) missingFields.push("Artwork Cover");
+      if (!releaseDate) missingFields.push("Release Date");
+      if (!genre) missingFields.push("Genre");
+
+      // Track-Level Checks
+      if (!tracks || tracks.length === 0) {
+        missingFields.push("At least one audio track");
+      } else {
+        tracks.forEach((track, index) => {
+          const trackName = track.title || `Track ${index + 1}`;
+
+          if (!track.fileUrl && !track.fileKey) {
+            missingFields.push(`Audio file for "${trackName}"`);
+          }
+          // You can also enforce track-level artists here if needed
+          if (!track.primaryArtists || track.primaryArtists.length === 0) {
+            missingFields.push(`Primary Artist for "${trackName}"`);
+          }
+        });
+      }
+
+      // If anything is missing, block the submission and tell them exactly what it is
+      if (missingFields.length > 0) {
         return res.status(400).json({
-          message:
-            "Please provide all required fields and at least one track before submitting.",
+          message: `Cannot submit release. Please provide the following missing information: ${missingFields.join(", ")}.`,
         });
       }
     }
@@ -119,20 +137,35 @@ export const createRelease = async (req, res) => {
       user: null,
     }));
     // Format Tracks (Now including Primary Artists per track)
+
     const formattedTracks = Array.isArray(tracks)
       ? tracks.map((track) => ({
           ...track,
-          // Handle multiple primary artists per track + filter out empty strings
+          // Handle Primary Artists
           primaryArtists: Array.isArray(track.primaryArtists)
             ? track.primaryArtists
-                .filter((name) => name && name.trim() !== "") // 👈 Add this filter
-                .map((name) => ({ name: name.trim(), user: null }))
+                .filter((item) => {
+                  // Handle both string and object formats defensively
+                  const name = typeof item === "object" ? item.name : item;
+                  return name && name.trim() !== "";
+                })
+                .map((item) => {
+                  const name = typeof item === "object" ? item.name : item;
+                  return { name: name.trim(), user: item.user || null };
+                })
             : [],
-          // Handle featured artists per track + filter out empty strings
+
+          // Handle Featured Artists
           featuredArtists: Array.isArray(track.featuredArtists)
             ? track.featuredArtists
-                .filter((name) => name && name.trim() !== "") // 👈 Add this filter
-                .map((name) => ({ name: name.trim(), user: null }))
+                .filter((item) => {
+                  const name = typeof item === "object" ? item.name : item;
+                  return name && name.trim() !== "";
+                })
+                .map((item) => {
+                  const name = typeof item === "object" ? item.name : item;
+                  return { name: name.trim(), user: item.user || null };
+                })
             : [],
         }))
       : [];
