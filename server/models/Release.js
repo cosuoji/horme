@@ -59,7 +59,11 @@ const trackSchema = new mongoose.Schema(
 // 2. The Main Merged Release Schema
 const releaseSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true }, // We keep Title required to identify the draft
+    title: {
+      type: String,
+      required: [true, "A release title is required before submitting."],
+      trim: true,
+    },
     releaseType: {
       type: String,
       enum: ["Single", "EP", "Album", "Compilation"],

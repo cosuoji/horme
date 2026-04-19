@@ -228,7 +228,22 @@ export const createRelease = async (req, res) => {
     });
   } catch (error) {
     console.error("Error saving release:", error);
-    res.status(500).json({ message: "Server error while saving release." });
+
+    // 🚀 NEW: Check if this is a Mongoose Validation Error
+    if (error.name === "ValidationError") {
+      // Extract the first error message (e.g., "title: Path `title` is required")
+      // and clean it up for the user
+      const messages = Object.values(error.errors).map((val) => val.message);
+
+      return res.status(400).json({
+        message: ` ${messages.join(", ")}`,
+      });
+    }
+
+    // Default fall-back for actual system/db crashes
+    res.status(500).json({
+      message: "An unexpected server error occurred. Please try again.",
+    });
   }
 };
 

@@ -165,6 +165,13 @@ const ReleaseBuilder = () => {
     setIsSubmitting(true);
     const dataToSend = customData || releaseData;
 
+    // 🚀 Front-end "Soft" Check
+    if (!isDraftStatus && !dataToSend.title) {
+      toast.error("Please enter a title for your release.");
+      setIsSubmitting(false);
+      return false;
+    }
+
     const formattedTracks = dataToSend.tracks.map((t, index) => ({
       ...t,
       // Ensure track-level artists are converted to arrays for the backend
