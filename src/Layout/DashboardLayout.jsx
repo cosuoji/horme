@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useUserStore } from "../store/useUserStore";
 import logo from "../assets/logo.png";
@@ -11,9 +11,11 @@ import {
   FaBars,
   FaTimes,
   FaUserCircle,
+  FaUsers, // 🚀 Added for Collabs
 } from "react-icons/fa";
 import SupportModal from "../Components/SupportModal";
 import { ScreenShare } from "lucide-react";
+import axios from "../lib/axios";
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,10 +23,34 @@ const DashboardLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [pendingCollabs, setPendingCollabs] = useState(0);
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
+  };
+
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const res = await axios.get("/api/collaborations/pending-count");
+        setPendingCollabs(res.data.count);
+      } catch (err) {
+        console.error("Failed to fetch notification count");
+      }
+    };
+
+    fetchNotificationCount();
+    // Optional: Set an interval to poll every 5 mins
+    const interval = setInterval(fetchNotificationCount, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const getRankName = () => {
+    const count = user?.releaseCount || 0;
+    if (count >= 20) return "Pro";
+    if (count >= 10) return "Rising";
+    return "Newcomer";
   };
 
   const navLinks = [
@@ -35,6 +61,12 @@ const DashboardLayout = () => {
       icon: <FaUserCircle />,
     },
     { name: "My Releases", path: "/dashboard/releases", icon: <FaMusic /> },
+    {
+      name: "Collaborations",
+      path: "/dashboard/collaborations",
+      icon: <FaUsers />,
+      badge: pendingCollabs,
+    }, // 🚀 New Link
     { name: "Wallet & Payouts", path: "/dashboard/wallet", icon: <FaWallet /> },
     { name: "Settings", path: "/dashboard/settings", icon: <FaCog /> },
   ];
@@ -71,8 +103,15 @@ const DashboardLayout = () => {
           </Link>
 
           {/* Artist Profile Quick View */}
-          <div className="mb-8 p-4 bg-[#050505] border border-[#B6B09F]/10 rounded-lg">
-            <p className="text-xs uppercase tracking-wider text-[#B6B09F]/60">
+          <div className="mb-8 p-4 bg-[#050505] border border-[#B6B09F]/10 rounded-lg relative overflow-hidden">
+            <div
+              className={`absolute top-0 right-0 text-black text-[8px] font-bold px-2 py-1 uppercase rounded-bl-lg ${
+                getRankName() === "Pro" ? "bg-yellow-500" : "bg-[#EAE4D5]"
+              }`}
+            >
+              Rank: {getRankName()}
+            </div>
+            <p className="text-xs uppercase tracking-wider text-[#B6B09F]/60 mt-2">
               Artist Account
             </p>
             <p className="text-[#EAE4D5] font-bold truncate">
@@ -90,28 +129,37 @@ const DashboardLayout = () => {
                   to={link.path}
                   onClick={() => setIsSidebarOpen(false)}
                   className={`
-                    flex items-center gap-4 px-4 py-3 rounded-lg font-medium transition-all duration-300
-                    ${
-                      isActive
-                        ? "bg-[#EAE4D5] text-[#0a0a0a]"
-                        : "text-[#B6B09F] hover:text-[#EAE4D5] hover:bg-[#B6B09F]/5"
-                    }
-                  `}
+                        flex items-center justify-between px-4 py-3 rounded-lg font-medium transition-all duration-300
+                        ${isActive ? "bg-[#EAE4D5] text-[#0a0a0a]" : "text-[#B6B09F] hover:text-[#EAE4D5] hover:bg-[#B6B09F]/5"}
+                      `}
                 >
-                  <span className="text-lg">{link.icon}</span>
-                  {link.name}
+                  <div className="flex items-center gap-4">
+                    <span className="text-lg">{link.icon}</span>
+                    {link.name}
+                  </div>
+
+                  {/* 🚀 THE BADGE */}
+                  {link.badge > 0 && (
+                    <span
+                      className={`
+                          text-[10px] font-bold px-2 py-0.5 rounded-full transition-colors
+                          ${isActive ? "bg-[#0a0a0a] text-[#EAE4D5]" : "bg-red-500 text-white"}
+                        `}
+                    >
+                      {link.badge > 9 ? "9+" : link.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
             <button
               onClick={() => setIsSupportOpen(true)}
-              className="w-full text-left px-4 py-2 text-[#B6B09F] hover:text-[#EAE4D5] text-sm"
+              className="w-full text-left px-4 py-2 text-[#B6B09F] hover:text-[#EAE4D5] text-sm mt-4 flex items-center gap-4"
             >
-              <ScreenShare className="inline-block mr-2" />
-              <span className="text-lg">Request Label Services</span>
+              <ScreenShare size={18} />
+              <span>Label Services</span>
             </button>
 
-            {/* Render the modal at the bottom of the layout */}
             <SupportModal
               isOpen={isSupportOpen}
               onClose={() => setIsSupportOpen(false)}
@@ -132,9 +180,8 @@ const DashboardLayout = () => {
       </aside>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-grow md:ml-0 pt-16 md:pt-0">
+      <main className="flex-grow md:ml-0 pt-16 md:pt-0 overflow-y-auto">
         <div className="container mx-auto px-6 py-8 max-w-6xl">
-          {/* This Outlet is where our pages (Dashboard, Wallet, etc.) will render! */}
           <Outlet />
         </div>
       </main>

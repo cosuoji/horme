@@ -8,12 +8,15 @@ const userSchema = new mongoose.Schema(
     stageName: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    releaseCount: { type: Number, default: 0 },
+    isAvailableForCollab: { type: Boolean, default: false },
     phoneNumber: { type: String },
     role: {
       type: String,
-      enum: ["artist", "admin", "scout", "producer"],
+      enum: ["artist", "admin", "scout"],
       default: "artist",
     },
+
     isVerified: { type: Boolean, default: false },
     verificationToken: String,
     verificationTokenExpires: Date,
@@ -27,8 +30,13 @@ const userSchema = new mongoose.Schema(
       },
       method: {
         type: String,
-        enum: ["bvn", "stripe", "sumsub"],
+        enum: ["bvn", "stripe", "sumsub", "manual_admin"],
         default: "bvn",
+      },
+      artistRank: {
+        type: String,
+        enum: ["Newcomer", "Rising", "Pro"],
+        default: "Newcomer",
       },
       country: { type: String }, // e.g., 'NG', 'US', 'GB'
       verifiedAt: { type: Date },

@@ -17,6 +17,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import scoutRoutes from "./routes/scoutRoutes.js";
 import releaseRoutes from "./routes/releaseRoutes.js";
+import collaborationsRoutes from "./routes/collaborations.js";
 
 //Error Middleware
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -80,6 +81,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/scouts", scoutRoutes);
 app.use("/api/releases", releaseRoutes);
+app.use("/api/collaborations", collaborationsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

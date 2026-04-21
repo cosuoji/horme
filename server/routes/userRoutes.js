@@ -5,6 +5,7 @@ import {
   updateUserProfile,
   getUserProfile,
   requestSupport,
+  collabToggle,
 } from "../controllers/userController.js";
 import {
   getProfile,
@@ -32,6 +33,9 @@ router.put("/profile", protect, updateUserProfile);
 
 // Protected route so only the logged-in user can get their profile
 router.get("/profile", protect, getUserProfile);
+
+// Protected route so only the logged-in user can toggle their collaboration status
+router.patch("/profile/collab-toggle", protect, collabToggle);
 
 // Protected route so only the logged-in user can get/update their profile
 router

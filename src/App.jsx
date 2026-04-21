@@ -25,7 +25,7 @@ import CookieConsent from "./Components/CookieConsent";
 import CookiePolicy from "./Pages/CookiePolicy";
 
 // Layouts
-import Layout from "./Components/Layout";
+import Layout from "./Layout/Layout";
 import AdminLayout from "./Layout/AdminLayout";
 import Header from "./Layout/Header";
 
@@ -42,20 +42,20 @@ import AdminRoute from "./Components/AdminRoute";
 
 // Dashboard routes
 import DashboardLayout from "./Layout/DashboardLayout";
-import SettingsPage from "./Pages/Dashboard/SettingsPage";
-import DashboardOverview from "./Pages/Dashboard/DashboardOverview";
-import WalletPage from "./Pages/Dashboard/WalletPage";
-import ReleasesPage from "./Pages/Dashboard/ReleasesPage";
-import ArtistProfileForm from "./Pages/Dashboard/ArtistProfileForm";
-import NewReleaseBuilder from "./Pages/Dashboard/NewReleaseBuilder";
+import SettingsPage from "./Components/ArtistDashboard/SettingsPage";
+import DashboardOverview from "./Components/ArtistDashboard/DashboardOverview";
+import WalletPage from "./Components/ArtistDashboard/WalletPage";
+import ReleasesPage from "./Components/ArtistDashboard/ReleasesPage";
+import ArtistProfileForm from "./Components/ArtistDashboard/ArtistProfileForm";
 import Index from "./Components/ReleaseBuilder/Index";
+import CollaborationsDashboard from "./Components/ArtistDashboard/CollaborationsDashboard";
 
 //Admin routes
-import AdminOverview from "./Pages/Admin/AdminOverview";
-import UserManagement from "./Pages/Admin/UserManagement";
-import ReleaseApprovalQueue from "./Pages/Admin/ReleaseApprovalQueue";
-import WithdrawalManager from "./Pages/Admin/WithdrawalManager";
-import ActivityLog from "./Pages/Admin/ActivityLog";
+import AdminOverview from "./Components/AdminComponents/AdminOverview";
+import UserManagement from "./Components/AdminComponents/UserManagement";
+import ReleaseApprovalQueue from "./Components/AdminComponents/ReleaseApprovalQueue";
+import WithdrawalManager from "./Components/AdminComponents/WithdrawalManager";
+import ActivityLog from "./Components/AdminComponents/ActivityLog";
 
 //Auth Pages
 import { useUserStore } from "./store/useUserStore";
@@ -158,11 +158,13 @@ const AppContent = () => {
               <Route path="profile" element={<ArtistProfileForm />} />
               <Route path="wallet" element={<WalletPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route
+                path="collaborations"
+                element={<CollaborationsDashboard />}
+              />
               <Route path="releases" element={<ReleasesPage />} />
-              {/* <Route path="releases/new" element={<NewReleaseBuilder />} />*/}
               <Route path="releases/new" element={<Index />} />
               <Route path="releases/edit/:id" element={<Index />} />
-              {/* <Route path="releases/edit/:id" element={<NewReleaseBuilder />} />*/}
             </Route>
 
             {/* Catch-all route at absolute bottom */}

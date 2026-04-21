@@ -1,16 +1,36 @@
 import React from "react";
 import { FaPlus, FaTrash, FaCopy } from "react-icons/fa";
 
+const WRITER_ROLES = ["Composer", "Lyricist", "Arranger", "Producer"];
+
 const WritersTab = ({ track, onUpdate, onApplyToAll }) => {
   const writers = track.writers || [];
 
   const addWriter = () => {
-    onUpdate("writers", [...writers, { legalName: "", role: "Composer" }]);
+    onUpdate("writers", [...writers, { legalName: "", roles: ["Composer"] }]);
   };
 
-  const updateWriter = (index, key, value) => {
-    const updated = [...writers];
-    updated[index][key] = value;
+  const toggleRole = (index, role) => {
+    const updated = writers.map((item, i) => {
+      if (i !== index) return item;
+
+      const currentRoles = item.roles || [];
+      const newRoles = currentRoles.includes(role)
+        ? currentRoles.length > 1
+          ? currentRoles.filter((r) => r !== role)
+          : currentRoles
+        : [...currentRoles, role];
+
+      return { ...item, roles: newRoles };
+    });
+
+    onUpdate("writers", updated);
+  };
+
+  const updateLegalName = (index, value) => {
+    const updated = writers.map((item, i) =>
+      i === index ? { ...item, legalName: value } : item,
+    );
     onUpdate("writers", updated);
   };
 
@@ -37,31 +57,35 @@ const WritersTab = ({ track, onUpdate, onApplyToAll }) => {
         {writers.map((writer, idx) => (
           <div
             key={idx}
-            className="flex flex-col md:flex-row gap-4 p-4 bg-[#B6B09F]/5 rounded-lg border border-[#B6B09F]/5 relative"
+            className="p-4 bg-[#B6B09F]/5 rounded-lg border border-[#B6B09F]/5 space-y-4"
           >
             <div className="flex-1">
-              <label className="text-[9px] text-[#B6B09F]/40 uppercase mb-1 block tracking-tighter">
+              <label className="text-[9px] text-[#B6B09F]/40 uppercase mb-1 block">
                 Legal Full Name
               </label>
               <input
                 value={writer.legalName}
-                onChange={(e) => updateWriter(idx, "legalName", e.target.value)}
-                className="w-full bg-transparent border-b border-[#B6B09F]/20 py-2 text-sm text-[#EAE4D5] focus:border-[#EAE4D5] outline-none"
+                onChange={(e) => updateLegalName(idx, e.target.value)} // <-- CALL IT HERE
+                className="w-full bg-transparent border-b border-[#B6B09F]/20 py-2 text-sm text-[#EAE4D5] outline-none"
               />
             </div>
-            <div className="w-full md:w-48">
-              <label className="text-[9px] text-[#B6B09F]/40 uppercase mb-1 block">
-                Role
-              </label>
-              <select
-                value={writer.role}
-                onChange={(e) => updateWriter(idx, "role", e.target.value)}
-                className="w-full bg-[#0a0a0a] border-b border-[#B6B09F]/20 py-2 text-sm text-[#EAE4D5] outline-none appearance-none"
-              >
-                <option value="Composer">Composer</option>
-                <option value="Lyricist">Lyricist</option>
-              </select>
+
+            <div className="flex flex-wrap gap-2">
+              {WRITER_ROLES.map((role) => (
+                <button
+                  key={role}
+                  onClick={() => toggleRole(idx, role)}
+                  className={`px-3 py-1.5 rounded-full text-[9px] uppercase border transition-all ${
+                    writer.roles?.includes(role)
+                      ? "bg-[#EAE4D5] text-black border-[#EAE4D5]"
+                      : "bg-transparent text-[#B6B09F]/40 border-[#B6B09F]/10"
+                  }`}
+                >
+                  {role}
+                </button>
+              ))}
             </div>
+
             <button
               onClick={() =>
                 onUpdate(

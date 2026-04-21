@@ -101,6 +101,9 @@ const Step2Tracks = ({
             name: data.primaryArtists?.[0]?.name || "Primary Artist",
             role: "Primary",
             percentage: 100,
+            // ADD THESE TWO LINES TO FIX THE VALIDATION ERROR:
+            category: "Performance",
+            creditRole: "Primary Artist",
           },
         ],
       };
@@ -119,62 +122,6 @@ const Step2Tracks = ({
   };
 
   // Update specific track fields
-
-  const updateTrack = (index, field, value) => {
-    setData((prev) => {
-      const updatedTracks = [...prev.tracks];
-      const currentTrack = { ...updatedTracks[index], [field]: value };
-
-      // Function to turn "Artist A, Artist B" into ["Artist A", "Artist B"]
-      const parseArtistString = (str) =>
-        str
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s !== "");
-
-      if (field === "primaryArtists" || field === "featuredArtists") {
-        const primaryList = parseArtistString(
-          currentTrack.primaryArtists || "",
-        );
-        const featuredList = parseArtistString(
-          currentTrack.featuredArtists || "",
-        );
-
-        // 1. Map Primary Artists to Splits
-        const primarySplits = primaryList.map((name, i) => {
-          const existing = currentTrack.splits?.find(
-            (s) => s.name === name && s.role === "Primary",
-          );
-          return {
-            name,
-            role: "Primary",
-            // Split 100% equally among primaries by default (e.g., 50/50 if there are two)
-            percentage: existing
-              ? existing.percentage
-              : Math.floor(100 / primaryList.length),
-          };
-        });
-
-        // 2. Map Featured Artists to Splits
-        const featuredSplits = featuredList.map((name) => {
-          const existing = currentTrack.splits?.find(
-            (s) => s.name === name && s.role === "Featured",
-          );
-          return {
-            name,
-            role: "Featured",
-            percentage: existing ? existing.percentage : 0,
-          };
-        });
-
-        // 3. Combine them
-        currentTrack.splits = [...primarySplits, ...featuredSplits];
-      }
-
-      updatedTracks[index] = currentTrack;
-      return { ...prev, tracks: updatedTracks };
-    });
-  };
 
   const updateTrackMetadata = (field, newValue) => {
     setData((prev) => {
@@ -237,26 +184,8 @@ const Step2Tracks = ({
     toast.success("Credits synced across all tracks");
   };
 
-  const addCredit = () => {
-    const updatedTracks = [...data.tracks];
-    updatedTracks[editingTrackIndex].additionalCredits.push({
-      name: "",
-      role: "",
-    });
-    setData({ ...data, tracks: updatedTracks });
-  };
-
-  const removeCredit = (creditIndex) => {
-    const updatedTracks = [...data.tracks];
-    updatedTracks[editingTrackIndex].additionalCredits.splice(creditIndex, 1);
-    setData({ ...data, tracks: updatedTracks });
-  };
-
   // Styles inherited from Step 1
-  const inputStyle =
-    "w-full bg-transparent border-b border-[#B6B09F]/20 focus:border-[#EAE4D5] outline-none text-[#EAE4D5] text-sm py-2 transition-colors placeholder-[#B6B09F]/30";
-  const labelStyle =
-    "text-[10px] text-[#B6B09F] uppercase tracking-[0.2em] font-bold mb-1 block opacity-70";
+
   const sectionCard = "p-6 bg-[#050505] border border-[#B6B09F]/10 rounded-xl";
 
   return (

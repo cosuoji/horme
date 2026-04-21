@@ -2,10 +2,34 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const isNotDraft = function () {
-  // If it's a sub-document (a track), we check the parent's status
-  const parent = this.ownerDocument ? this.ownerDocument() : this;
-  return parent.status !== "draft";
+  // If we are in a sub-document (Track or Split), find the top-level Release
+  const root = this.ownerDocument ? this.ownerDocument() : this;
+  return root.status !== "draft";
 };
+
+const splitSchema = new mongoose.Schema({
+  name: { type: String, required: isNotDraft },
+
+  // 1. Functional Category (STRICT)
+  // This tells the system how to handle the user profile and payouts.
+  category: {
+    type: String,
+    required: isNotDraft,
+    enum: ["Artist", "Producer", "Writer", "Engineer", "Label/Business"],
+  },
+
+  // 2. Specific Credit (FLEXIBLE)
+  // This is what shows up on the "Liner Notes"
+  creditRole: {
+    type: String,
+    required: false,
+    trim: true,
+    maxlength: 50,
+  },
+
+  percentage: { type: Number, required: isNotDraft, min: 0, max: 100 },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+});
 
 // 1. Helper Schema for Standard Artists (Stage Names)
 const trackArtistSchema = new Schema(
@@ -20,11 +44,7 @@ const trackArtistSchema = new Schema(
 const writerSchema = new Schema(
   {
     legalName: { type: String, required: true, trim: true },
-    role: {
-      type: String,
-      enum: ["Composer", "Lyricist", "Producer"], // DSPs usually require Composer/Lyricist
-      required: true,
-    },
+    roles: [String],
     user: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   { _id: false },
@@ -34,7 +54,7 @@ const writerSchema = new Schema(
 const creditSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    role: { type: String, required: true, trim: true }, // e.g., "Guitarist", "Mix Engineer"
+    roles: [String],
     user: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   { _id: false },
@@ -53,31 +73,6 @@ const trackSchema = new mongoose.Schema(
     featuredArtists: [trackArtistSchema],
     writers: [writerSchema],
     additionalCredits: [creditSchema],
-
-    // 💰 Splits Section
-    splits: [
-      {
-        name: { type: String, required: isNotDraft, trim: true },
-        // Added email for future payout/invite functionality
-        email: { type: String, lowercase: true, trim: true },
-        role: {
-          type: String,
-          enum: ["Primary", "Featured", "Producer", "Writer", "Label"],
-          required: isNotDraft,
-        },
-        percentage: {
-          type: Number,
-          required: isNotDraft,
-          min: 0,
-          max: 100,
-        },
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          default: null,
-        },
-      },
-    ],
   },
   { timestamps: true },
 );
@@ -149,7 +144,7 @@ const releaseSchema = new mongoose.Schema(
     // Status 🚀 ADDED 'draft' AND CHANGED DEFAULT
     status: {
       type: String,
-      enum: ["draft", "pending", "distributed", "takedown", "rejected"],
+      enum: ["draft", "pending", "distributed", "rejected"],
       default: "draft",
     },
     rejectionReason: { type: String, default: "" },

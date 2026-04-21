@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import Loading from './Loading';
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import Loading from "../Components/Loading";
 
 const Layout = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -18,7 +18,9 @@ const Layout = ({ children }) => {
   return (
     <>
       {isLoading && <Loading />}
-      <div className={`transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
+      <div
+        className={`transition-opacity duration-500 ${isLoading ? "opacity-0" : "opacity-100"}`}
+      >
         {children}
       </div>
     </>

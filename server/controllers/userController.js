@@ -194,3 +194,36 @@ export const requestSupport = async (req, res) => {
     res.status(500).json({ message: "Error sending request." });
   }
 };
+
+export const collabToggle = async (req, res) => {
+  try {
+    // 1. Log to verify middleware is working
+    console.log("User ID from middleware:", req.user?._id);
+    console.log("Status received:", req.body.isAvailableForCollab);
+
+    const { isAvailableForCollab } = req.body;
+
+    // 2. Check if req.user exists (the 'protect' middleware should handle this, but let's be safe)
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Not authorized, no user ID" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isAvailableForCollab = isAvailableForCollab;
+
+    await user.save();
+    res.status(200).json({
+      success: true,
+      isAvailableForCollab: user.isAvailableForCollab,
+    });
+  } catch (error) {
+    // 3. THIS IS CRITICAL: Log the actual error to your terminal
+    console.error("Collab Toggle Error:", error);
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message, // Sending the message back helps debugging during dev
+    });
+  }
+};

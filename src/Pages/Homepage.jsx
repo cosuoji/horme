@@ -8,7 +8,6 @@ import {
   FaTiktok,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
-import youngjonnfeatured from "../assets/artists/youngjonnfeatured.png";
 import rayonafeatured from "../assets/artists/rayonnafeatured.png";
 import heroVideo from "../assets/label-showreel.mp4";
 import onlyfans from "../assets/influencercampaigns/onlyfans.png";
@@ -26,13 +25,6 @@ import rayofsunshine from "../assets/rayofsunshine.png";
 import afroculture from "../assets/afroculture.png";
 
 const featuredArtists = [
-  // {
-  //   id: "youngjonn",
-  //   name: "Young Jonn",
-  //   image: youngjonnfeatured,
-  //   genre: "Afrobeats",
-  //   latestTrack: "Cash Flow ft. Wizkid"
-  // },
   {
     id: "rayona",
     name: "Rayona",
@@ -269,29 +261,6 @@ export default function Homepage() {
                 />
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter */}
-      <section className="py-20 bg-[#0a0a0a] border-t border-[#B6B09F]/20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#EAE4D5] mb-6">
-            Stay Connected
-          </h2>
-          <p className="text-[#B6B09F] mb-8 max-w-2xl mx-auto">
-            Join our mailing list for exclusive updates, releases, and industry
-            insights
-          </p>
-          <div className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
-            <input
-              type="email"
-              placeholder="Your email address"
-              className="flex-grow px-4 py-3 bg-transparent border border-[#B6B09F] text-[#EAE4D5] placeholder-[#B6B09F] focus:border-[#EAE4D5] outline-none transition"
-            />
-            <button className="bg-[#EAE4D5] text-[#0a0a0a] px-6 py-3 font-medium hover:bg-opacity-90 transition cursor-not-allowed disabled">
-              Subscribe
-            </button>
           </div>
         </div>
       </section>

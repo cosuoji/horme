@@ -165,37 +165,36 @@ const ReleaseBuilder = () => {
     setIsSubmitting(true);
     const dataToSend = customData || releaseData;
 
-    // 🚀 Front-end "Soft" Check
     if (!isDraftStatus && !dataToSend.title) {
       toast.error("Please enter a title for your release.");
       setIsSubmitting(false);
       return false;
     }
 
+    // Helper to force anything into a clean array of strings for the DB
+    const cleanArtists = (val) => {
+      if (typeof val === "string")
+        return val
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      if (Array.isArray(val))
+        return val.map((a) => (typeof a === "object" ? a.name : a));
+      return [];
+    };
+
     const formattedTracks = dataToSend.tracks.map((t, index) => ({
       ...t,
-      // Ensure track-level artists are converted to arrays for the backend
       trackNumber: index + 1,
-      primaryArtists:
-        typeof t.primaryArtists === "string"
-          ? t.primaryArtists
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : t.primaryArtists,
-      featuredArtists:
-        typeof t.featuredArtists === "string"
-          ? t.featuredArtists
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : t.featuredArtists,
+      primaryArtists: cleanArtists(t.primaryArtists),
+      featuredArtists: cleanArtists(t.featuredArtists),
+      writers: t.writers || [],
+      additionalCredits: t.additionalCredits || [],
     }));
 
     try {
       const response = await axios.post("/api/releases", {
         ...dataToSend,
-        // Use savedReleaseId here, NOT id from params
         tracks: formattedTracks,
         releaseId: savedReleaseId,
         isDraft: isDraftStatus,
@@ -205,46 +204,47 @@ const ReleaseBuilder = () => {
           agreed: hasSigned,
           signedName: legalName,
         },
-        // Ensure artists are arrays before sending
-        primaryArtists:
-          typeof dataToSend.primaryArtists === "string"
-            ? dataToSend.primaryArtists
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : dataToSend.primaryArtists,
+        // Use the helper here too!
+        primaryArtists: cleanArtists(dataToSend.primaryArtists),
+        featuredArtists: cleanArtists(dataToSend.featuredArtists),
       });
 
       if (response.data.release) {
-        setLastSaved(new Date().toLocaleTimeString());
-        setSavedReleaseId(response.data.release._id); // Store the new ID
-
-        // IMPORTANT: Map the backend objects back to strings for your inputs
         const saved = response.data.release;
+        setLastSaved(new Date().toLocaleTimeString()); // Added this back for visual feedback
+        setSavedReleaseId(saved._id);
+
         setReleaseData({
           ...saved,
-          // Map Release Level
-          releaseDate: saved.releaseDate ? saved.releaseDate.split("T")[0] : "",
-          preOrderDate: saved.preOrderDate
-            ? saved.preOrderDate.split("T")[0]
-            : "",
-          primaryArtists:
-            saved.primaryArtists?.map((a) => a.name).join(", ") || "",
-          featuredArtists:
-            saved.featuredArtists?.map((a) => a.name).join(", ") || "",
-          // Map Track Level (This is what was missing!)
+          // UI expects Strings
+          primaryArtists: Array.isArray(saved.primaryArtists)
+            ? saved.primaryArtists
+                .map((a) => (typeof a === "object" ? a.name : a))
+                .join(", ")
+            : saved.primaryArtists || "",
+          featuredArtists: Array.isArray(saved.featuredArtists)
+            ? saved.featuredArtists
+                .map((a) => (typeof a === "object" ? a.name : a))
+                .join(", ")
+            : saved.featuredArtists || "",
+
           tracks: saved.tracks.map((t) => ({
             ...t,
             primaryArtists: Array.isArray(t.primaryArtists)
-              ? t.primaryArtists.map((a) => a.name).join(", ")
-              : t.primaryArtists,
+              ? t.primaryArtists
+                  .map((a) => (typeof a === "object" ? a.name : a))
+                  .join(", ")
+              : t.primaryArtists || "",
             featuredArtists: Array.isArray(t.featuredArtists)
-              ? t.featuredArtists.map((a) => a.name).join(", ")
-              : t.featuredArtists,
+              ? t.featuredArtists
+                  .map((a) => (typeof a === "object" ? a.name : a))
+                  .join(", ")
+              : t.featuredArtists || "",
+            writers: t.writers || [],
+            additionalCredits: t.additionalCredits || [],
           })),
         });
 
-        // Visual feedback
         if (isDraftStatus) toast.success("Progress Saved");
       }
       return true;
@@ -264,22 +264,30 @@ const ReleaseBuilder = () => {
   const handleStepNext = async (currentStep) => {
     let dataToSync = { ...releaseData };
 
-    // BRIDGE: Moving from Step 2 to 3
     if (currentStep === 2) {
-      // If a track has no artists, inherit them from the main release
-      dataToSync.tracks = dataToSync.tracks.map((track) => ({
-        ...track,
-        primaryArtists: track.primaryArtists?.length
-          ? track.primaryArtists
-          : dataToSync.primaryArtists,
-        featuredArtists: track.featuredArtists?.length
-          ? track.featuredArtists
-          : dataToSync.featuredArtists,
-      }));
+      dataToSync.tracks = dataToSync.tracks.map((track) => {
+        // Helper to check if artist data actually exists (works for string or array)
+        const hasContent = (val) => {
+          if (Array.isArray(val))
+            return val.length > 0 && (val[0].name || val[0]);
+          return typeof val === "string" && val.trim() !== "";
+        };
+
+        return {
+          ...track,
+          primaryArtists: hasContent(track.primaryArtists)
+            ? track.primaryArtists
+            : dataToSync.primaryArtists,
+          featuredArtists: hasContent(track.featuredArtists)
+            ? track.featuredArtists
+            : dataToSync.featuredArtists,
+        };
+      });
+
       setReleaseData(dataToSync);
     }
 
-    const success = await saveData(true, dataToSync); // Save as draft first
+    const success = await saveData(true, dataToSync);
     if (success) setStep(currentStep + 1);
   };
 
@@ -348,7 +356,7 @@ const ReleaseBuilder = () => {
       {/* 2. HORIZONTAL STEPPER */}
       <ProgressSidebar currentStep={step} />
 
-      <main className="bg-[#0a0a0a]/40 border border-[#B6B09F]/5 rounded-2xl p-8 md:p-12">
+      <main className="bg-[#0a0a0a]/40 border border-[#B6B09F]/5 rounded-2xl p-6 md:p-12 overflow-y-auto max-h-none h-auto">
         {" "}
         {step === 1 && (
           <Step1General
@@ -377,7 +385,6 @@ const ReleaseBuilder = () => {
         {step === 3 && (
           <Step3Review
             releaseData={releaseData}
-            setData={setReleaseData}
             setStep={setStep}
             handleSubmit={handleFinalSubmit} // Only handles the final POST
             isSubmitting={isSubmitting}
