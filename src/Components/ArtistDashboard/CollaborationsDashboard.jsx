@@ -12,6 +12,10 @@ import {
 import axios from "../../lib/axios";
 import { useUserStore } from "../../store/useUserStore";
 import { toast } from "react-hot-toast";
+import ResponseCollabModal from "../ResponseCollabModal";
+import ProposeCollabModal from "../ProposeCollabModal";
+import SnippetPlayer from "../SnippetPlayer";
+import AcceptCollabModal from "../AcceptCollabModal";
 
 const CollaborationsDashboard = () => {
   const { user } = useUserStore();
@@ -34,8 +38,13 @@ const CollaborationsDashboard = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showResponseModal, setShowResponseModal] = useState(false);
-  const [pendingAction, setPendingAction] = useState({ id: null, status: "" });
+  const [pendingAction, setPendingAction] = useState({
+    id: null,
+    artistName: "",
+    status: "",
+  });
   const [rejectionReason, setRejectionReason] = useState("");
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
 
   // 1. Fetch initial data
   const fetchCollabs = useCallback(async () => {
@@ -49,6 +58,8 @@ const CollaborationsDashboard = () => {
       setLoading(false);
     }
   }, []);
+
+  console.log(incoming);
 
   useEffect(() => {
     fetchCollabs();
@@ -126,26 +137,24 @@ const CollaborationsDashboard = () => {
   };
 
   // 4. Handle Respond (Accept/Decline)
-  const handleResponse = async (id, status) => {
-    if (status === "declined") {
-      setPendingAction({ id, status });
-      setShowResponseModal(true);
-      return;
+  const handleResponse = (id, status) => {
+    setPendingAction({ id, status });
+    if (status === "accepted") {
+      setShowAcceptModal(true);
+    } else {
+      setShowResponseModal(true); // Your decline modal
     }
-
-    // Direct execution for 'accepted'
-    executeResponse(id, status);
   };
 
-  const executeResponse = async (id, status, reason = "") => {
+  const executeResponse = async (id, status, feedback) => {
     try {
-      await axios.patch(`/api/collaborations/${id}/respond`, {
-        status,
-        rejectionReason: reason,
-      });
+      await axios.patch(`/api/collaborations/${id}`, { status, feedback });
       toast.success(`Collaboration ${status}`);
+
+      // ADD THESE LINES:
+      setShowAcceptModal(false);
       setShowResponseModal(false);
-      setRejectionReason("");
+
       fetchCollabs();
     } catch (err) {
       toast.error("Action failed");
@@ -158,6 +167,20 @@ const CollaborationsDashboard = () => {
     if (releases >= 20) return { name: "Pro", limit: "10/week" };
     if (releases >= 10) return { name: "Rising", limit: "3/Week" };
     return { name: "Newcomer", limit: "1/Week" };
+  };
+
+  const openResponseModal = (collab, status) => {
+    setPendingAction({
+      id: collab._id,
+      artistName: collab.requesterId?.stageName || "Artist",
+      status: status,
+    });
+
+    if (status === "accepted") {
+      setShowAcceptModal(true);
+    } else {
+      setShowResponseModal(true);
+    }
   };
 
   return (
@@ -388,161 +411,30 @@ const CollaborationsDashboard = () => {
         )}
       </div>
 
-      {/* PROPOSE MODAL */}
-      {showProposeModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-          <div className="bg-[#0a0a0a] border border-[#B6B09F]/20 rounded-2xl w-full max-w-md p-8 animate-in zoom-in-95">
-            <h2 className="text-xl font-bold text-[#EAE4D5] mb-2">
-              Propose Feature
-            </h2>
-            <p className="text-xs text-[#B6B09F]/50 uppercase tracking-widest mb-6">
-              To: {selectedArtist?.stageName}
-            </p>
+      <ProposeCollabModal
+        isOpen={showProposeModal}
+        onClose={() => setShowProposeModal(false)}
+        artist={selectedArtist}
+        isSubmitting={isSubmitting}
+        onSend={handleSendProposal}
+      />
 
-            <form onSubmit={handleSendProposal} className="space-y-6">
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-[#B6B09F] block mb-2">
-                  Track Title
-                </label>
-                <input
-                  required
-                  type="text"
-                  className="w-full bg-[#050505] border border-[#B6B09F]/20 rounded-lg p-3 text-sm focus:border-[#EAE4D5] outline-none"
-                  placeholder="e.g. Midnight Sun"
-                  value={proposalData.trackTitle}
-                  onChange={(e) =>
-                    setProposalData({
-                      ...proposalData,
-                      trackTitle: e.target.value,
-                    })
-                  }
-                />
-              </div>
+      <ResponseCollabModal
+        isOpen={showResponseModal}
+        onClose={() => setShowResponseModal(false)}
+        onConfirm={(reason) =>
+          executeResponse(pendingAction.id, "declined", reason)
+        }
+      />
 
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-[10px] uppercase tracking-widest text-[#B6B09F]">
-                    Proposed Split
-                  </label>
-                  <span className="text-[#EAE4D5] font-bold">
-                    {proposalData.proposedSplit}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="99"
-                  className="w-full accent-[#EAE4D5]"
-                  value={proposalData.proposedSplit}
-                  onChange={(e) =>
-                    setProposalData({
-                      ...proposalData,
-                      proposedSplit: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-[#B6B09F] block mb-2">
-                  Audio Snippet
-                </label>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="audio/*"
-                    onChange={(e) => setSelectedFile(e.target.files[0])}
-                    className="hidden"
-                    id="snippet-upload"
-                  />
-                  <label
-                    htmlFor="snippet-upload"
-                    className="flex items-center justify-center gap-3 w-full bg-[#050505] border border-dashed border-[#B6B09F]/20 rounded-lg p-4 text-sm text-[#B6B09F] cursor-pointer hover:border-[#EAE4D5] transition-all"
-                  >
-                    <FaPlus className="text-xs" />
-                    {selectedFile ? selectedFile.name : "Select Audio File"}
-                  </label>
-                  <p className="text-[9px] text-[#B6B09F]/40 mt-2">
-                    * Please upload a snippet (max 60 seconds) for the artist to
-                    preview
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowProposeModal(false)}
-                  className="flex-1 px-4 py-3 border border-[#B6B09F]/20 rounded-lg text-xs uppercase font-bold tracking-widest text-[#B6B09F]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-3 bg-[#EAE4D5] text-black rounded-lg text-xs uppercase font-bold tracking-widest hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-3 h-3 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    "Send Proposal"
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* RESPONSE MODAL (Decline Reason) */}
-      {showResponseModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
-          <div className="bg-[#0a0a0a] border border-red-500/20 rounded-2xl w-full max-w-sm p-8 shadow-2xl">
-            <h2 className="text-xl font-bold text-[#EAE4D5] mb-2 flex items-center gap-2">
-              <FaTimes className="text-red-500" /> Decline Proposal
-            </h2>
-            <p className="text-xs text-[#B6B09F]/60 mb-6 uppercase tracking-widest">
-              Provide feedback for the artist
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-[#B6B09F] block mb-2">
-                  Reason for Declining (Optional)
-                </label>
-                <textarea
-                  className="w-full bg-[#050505] border border-[#B6B09F]/20 rounded-lg p-3 text-sm focus:border-red-500 outline-none text-[#EAE4D5] h-24 resize-none"
-                  placeholder="e.g. Schedule is full, not my style, etc."
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowResponseModal(false)}
-                  className="flex-1 px-4 py-3 border border-[#B6B09F]/10 rounded-lg text-xs uppercase font-bold tracking-widest text-[#B6B09F] hover:bg-white/5"
-                >
-                  Go Back
-                </button>
-                <button
-                  onClick={() =>
-                    executeResponse(
-                      pendingAction.id,
-                      "declined",
-                      rejectionReason,
-                    )
-                  }
-                  className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg text-xs uppercase font-bold tracking-widest hover:bg-red-600 transition-colors"
-                >
-                  Confirm Decline
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <AcceptCollabModal
+        isOpen={showAcceptModal}
+        onClose={() => setShowAcceptModal(false)}
+        artistName={pendingAction.artistName}
+        onConfirm={(terms) =>
+          executeResponse(pendingAction.id, "accepted", terms)
+        }
+      />
     </div>
   );
 };

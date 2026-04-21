@@ -112,47 +112,92 @@ const ReleaseDetailModal = ({ isOpen, onClose, release }) => {
                   {release.tracks.map((track, idx) => (
                     <div
                       key={idx}
-                      className="bg-[#050505] border border-[#B6B09F]/10 rounded-xl p-5"
+                      className="bg-[#050505] border border-[#B6B09F]/10 rounded-xl p-6"
                     >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      {/* Header: Title & Player */}
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#B6B09F]/5">
                         <div className="flex items-center gap-4">
                           <span className="text-xs font-black text-[#B6B09F]/20">
                             {String(track.trackNumber).padStart(2, "0")}
                           </span>
                           <div>
-                            <p className="text-[#EAE4D5] font-medium">
+                            <p className="text-[#EAE4D5] font-medium text-lg">
                               {track.title}
                             </p>
                             <p className="text-[10px] text-[#B6B09F] uppercase tracking-wider">
-                              ISRC: {track.isrc || "Auto-assign"}
+                              ISRC: {track.isrc || "Auto-assign"} |{" "}
+                              {track.explicit ? "Explicit" : "Clean"}
                             </p>
                           </div>
                         </div>
 
-                        {/* Audio Player */}
+                        {/* Direct SRC fix for Pre-signed URLs */}
                         <audio
                           controls
-                          className="h-8 opacity-70 hover:opacity-100 transition-opacity"
-                        >
-                          <source src={track.fileUrl} type="audio/wav" />
-                        </audio>
+                          src={track.fileUrl}
+                          className="h-8 opacity-70 hover:opacity-100 transition-opacity w-full md:w-64"
+                        />
                       </div>
 
-                      {/* Track Splits Display */}
-                      <div className="mt-4 pt-4 border-t border-[#B6B09F]/5 flex flex-wrap gap-4">
-                        {track.splits.map((split, sIdx) => (
-                          <div
-                            key={sIdx}
-                            className="bg-[#B6B09F]/5 px-3 py-1.5 rounded-md border border-[#B6B09F]/10"
-                          >
-                            <span className="text-[9px] text-[#B6B09F] uppercase block">
-                              {split.role}
-                            </span>
-                            <span className="text-xs text-[#EAE4D5]">
-                              {split.name} — {split.percentage}%
-                            </span>
+                      {/* Detailed Metadata Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+                        {/* Writers Column */}
+                        <div>
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#B6B09F]/50 block mb-3">
+                            Writers & Publishing
+                          </span>
+                          <div className="space-y-3">
+                            {track.writers?.map((writer, wIdx) => (
+                              <div key={wIdx} className="text-sm">
+                                <p className="text-[#EAE4D5]">
+                                  {writer.legalName}
+                                </p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {writer.roles.map((role, rIdx) => (
+                                    <span
+                                      key={rIdx}
+                                      className="text-[8px] bg-[#B6B09F]/10 text-[#B6B09F] px-1.5 py-0.5 rounded uppercase tracking-tighter"
+                                    >
+                                      {role}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
+
+                        {/* Additional Credits Column */}
+                        <div>
+                          <span className="text-[9px] uppercase tracking-[0.2em] text-[#B6B09F]/50 block mb-3">
+                            Production & Engineering
+                          </span>
+                          <div className="space-y-3">
+                            {track.additionalCredits?.length > 0 ? (
+                              track.additionalCredits.map((credit, cIdx) => (
+                                <div key={cIdx} className="text-sm">
+                                  <p className="text-[#EAE4D5]">
+                                    {credit.name}
+                                  </p>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {credit.roles.map((role, rIdx) => (
+                                      <span
+                                        key={rIdx}
+                                        className="text-[8px] bg-blue-500/10 text-blue-400/80 px-1.5 py-0.5 rounded uppercase tracking-tighter"
+                                      >
+                                        {role}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-[#B6B09F]/30 text-xs italic">
+                                No additional credits provided
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}

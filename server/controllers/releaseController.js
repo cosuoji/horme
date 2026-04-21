@@ -45,7 +45,7 @@ export const getPresignedUrl = async (req, res) => {
 
     // Organized Path: artist/release-title/audio/uuid-filename
     const safeTitle = releaseTitle?.trim() || "untitled-release";
-    const folderPath = `${slugify(artistName)}/${slugify(safeTitle)}/audio`;
+    const folderPath = `music/${slugify(artistName)}/${slugify(safeTitle)}/audio`;
     const fileKey = `${folderPath}/${uuidv4()}-${fileName}`;
 
     const command = new PutObjectCommand({

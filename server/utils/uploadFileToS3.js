@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Initialize S3 Client
-const s3Client = new S3Client({
+export const s3Client = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -26,7 +26,7 @@ export const uploadFileToS3 = async (fileBuffer, fileKey, contentType) => {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: fileKey,
         Body: fileBuffer,
-        ContentType: contentType,
+        ContentType: contentType || "audio/wav",
         // Optional: ACL: 'public-read'
         // Note: Only use ACL if your bucket isn't set to "Block all public access"
       },

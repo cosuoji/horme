@@ -3,6 +3,10 @@ import User from "../models/User.js";
 import AuditLog from "../models/AuditLog.js";
 import { uploadFileToS3 } from "../utils/uploadFileToS3.js";
 import { v4 as uuidv4 } from "uuid";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "../utils/uploadFileToS3.js";
+
 // 🔍 1. Search for Artists (Discover Tab)
 export const searchArtists = async (req, res) => {
   try {
@@ -93,26 +97,50 @@ export const proposeCollaboration = async (req, res) => {
   }
 };
 
-// 📥 3. Get User's Collaborations (Incoming & Outgoing)
 export const getMyCollaborations = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const incoming = await Collaboration.find({ recipientId: userId })
+    const incoming = await Collaboration.find({
+      recipientId: userId,
+      status: { $ne: "declined" },
+    })
       .populate("requesterId", "stageName")
-      .sort("-createdAt");
+      .lean();
 
     const outgoing = await Collaboration.find({ requesterId: userId })
       .populate("recipientId", "stageName")
-      .sort("-createdAt");
+      .lean();
 
-    res.status(200).json({ incoming, outgoing });
+    // Helper to sign the snippetUrl
+    const signSnippet = async (collab) => {
+      if (!collab.snippetUrl) return collab;
+
+      // If you aren't saving snippetKey separately, extract it from the URL
+      // or use the key you generated during upload.
+      const fileKey = collab.snippetUrl.split(".com/")[1];
+
+      const command = new GetObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: fileKey,
+      });
+
+      const signedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600,
+      });
+      return { ...collab, snippetUrl: signedUrl };
+    };
+
+    const signedIncoming = await Promise.all(incoming.map(signSnippet));
+    const signedOutgoing = await Promise.all(outgoing.map(signSnippet));
+
+    res
+      .status(200)
+      .json({ incoming: signedIncoming, outgoing: signedOutgoing });
   } catch (error) {
-    console.error("Fetch Collabs Error:", error);
     res.status(500).json({ message: "Failed to fetch collaborations" });
   }
 };
-
 // 🤝 4. Respond to a Proposal (Accept/Decline)
 export const respondToCollaboration = async (req, res) => {
   try {
