@@ -63,6 +63,7 @@ const creditSchema = new Schema(
 const trackSchema = new mongoose.Schema(
   {
     title: { type: String, required: isNotDraft, trim: true },
+    lyrics: { type: String, trim: true, default: "" },
     fileUrl: { type: String, required: isNotDraft },
     fileKey: { type: String, required: isNotDraft },
     isrc: { type: String, trim: true },

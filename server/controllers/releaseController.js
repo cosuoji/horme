@@ -71,44 +71,27 @@ export const createRelease = async (req, res) => {
   try {
     const {
       releaseId,
-
       isDraft,
-
       releaseTitle,
-
       releaseType,
-
       artworkUrl,
-
       releaseDate,
-
       preOrderDate,
-
       timeZone,
-
       genre,
-
       label,
-
       language,
-
       cLine,
-
       pLine,
-
       upc,
-
       featuredArtists,
-
       primaryArtists,
-
       tracks,
     } = req.body;
 
     // 1. CONDITIONAL VALIDATION
 
     // Only run strict checks if the user is actually SUBMITTING (not drafting)
-
     if (!isDraft) {
       const missingFields = [];
 
@@ -422,7 +405,7 @@ export const uploadArtwork = async (req, res) => {
 
     const fileExt = req.file.originalname.split(".").pop();
     // Organized Path: artist/release-title/artwork/uuid.ext
-    const folderPath = `${slugify(artistName)}/${slugify(releaseTitle || "untitled")}/artwork`;
+    const folderPath = `/music/${slugify(artistName)}/${slugify(releaseTitle || "untitled")}/artwork`;
     const fileKey = `${folderPath}/${uuidv4()}.${fileExt}`;
 
     const command = new PutObjectCommand({

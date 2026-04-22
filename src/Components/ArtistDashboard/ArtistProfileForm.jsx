@@ -26,6 +26,9 @@ const ArtistProfileForm = () => {
     language: "English",
     cLine: "",
     pLine: "",
+    country: "",
+    phoneNumber: "",
+
     deliveries: {
       beatport: false,
       youtubeContentId: false,
@@ -293,6 +296,19 @@ const ArtistProfileForm = () => {
                   Invalid phone format (e.g. +234...)
                 </p>
               )}
+            </div>
+            <div>
+              <label className="block text-[#EAE4D5] text-sm mb-2">
+                Country
+              </label>
+              <input
+                type="text"
+                name="country"
+                value={formData.country || ""}
+                onChange={handleChange}
+                className={inputStyle}
+                placeholder="e.g. Nigeria"
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

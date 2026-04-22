@@ -11,6 +11,8 @@ const artistProfileSchema = new mongoose.Schema(
     profileImage: { type: String, default: "" }, // Will hold Cloudinary URL
     artistName: { type: String },
     description: { type: String },
+    country: { type: String },
+    phoneNumber: { type: String },
 
     // Uploader Defaults
     artistRoles: [{ type: String }],

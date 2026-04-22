@@ -14,7 +14,6 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const success = await login(email, password);
 
     if (success) {
@@ -23,6 +22,19 @@ const Login = () => {
 
       if (user?.role === "admin") {
         navigate("/admin");
+        return;
+      }
+
+      // CHECK FOR PROFILE COMPLETENESS
+      // We check if the user has a stageName or any other required field
+      // that only exists after they've set up their artist profile.
+      const hasProfile = user?.stageName && user?.bio;
+
+      if (!hasProfile) {
+        toast("Please complete your artist profile to start distributing.", {
+          icon: "🎨",
+        });
+        navigate("/dashboard/profile");
       } else {
         navigate("/dashboard");
       }

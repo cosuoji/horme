@@ -1,269 +1,140 @@
 import { Link } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaInstagram,
-  FaTwitter,
-  FaTiktok,
-} from "react-icons/fa";
 import { motion } from "framer-motion";
-import rayonafeatured from "../assets/artists/rayonnafeatured.png";
 import heroVideo from "../assets/label-showreel.mp4";
-import onlyfans from "../assets/influencercampaigns/onlyfans.png";
-import craze from "../assets/radio/radiocampaigns/craze.png";
-import shaolin from "../assets/shaolin.png";
-import megamoney from "../assets/radio/radiocampaigns/megamoney.png";
-import earlymomo from "../assets/earlymomo.png";
-import whogopay from "../assets/influencercampaigns/whogopay.png";
-import cheche from "../assets/cheche.png";
-import cashflow from "../assets/cashflow.jpeg";
 import useSEO from "../hooks/useSEO";
-
-import testimony from "../assets/testimony.png";
-import rayofsunshine from "../assets/rayofsunshine.png";
-import afroculture from "../assets/afroculture.png";
-
-const featuredArtists = [
-  {
-    id: "rayona",
-    name: "Rayona",
-    image: rayonafeatured,
-    genre: "Afropop",
-    latestTrack: "Beauty",
-  },
-];
-
-const clients = [
-  { name: "Young Jonn - Cash Flow", logo: cashflow },
-  { name: "Rayonna - Craze", logo: craze },
-  { name: "Young Jonn - Only Fans", logo: onlyfans },
-  { name: "Seyi Vibez - Shaolin", logo: shaolin },
-  { name: "Tiwa Savage - Mega Money Mega", logo: megamoney },
-  { name: "Falz - Who Go Pay", logo: whogopay },
-  { name: "Young Jonn - Che Che", logo: cheche },
-  { name: "Spy Shitta - Early Momo", logo: earlymomo },
-  { name: "Rayona - Testimony", logo: testimony },
-  { name: "Rayona - Ray Of Sunshine (EP) ", logo: rayofsunshine },
-  { name: "Flavour - Afroculture (EP) ", logo: afroculture },
-];
+import logo from "../assets/motion.png";
 
 export default function Homepage() {
-  const carouselRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  // Auto-rotate carousel
-  useEffect(() => {
-    if (isPaused) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev === clients.length - 1 ? 0 : prev + 1));
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [isPaused, currentIndex]);
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? clients.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev === clients.length - 1 ? 0 : prev + 1));
-  };
-
   useSEO({
     title: "Home",
     description:
-      "Motion Works is a music agency based in Lagos, Nigeria. We specialize in music production, marketing, and distribution.",
+      "Distribute your music, find collaborators and get paid - all in one place.",
   });
 
-  return (
-    <div className="bg-[#0a0a0a] text-[#B6B09F]">
-      {/* Hero Section */}
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-[#050505]">
-        {/* Background remains static or keeps its own subtle pulse */}
-        <div className="absolute inset-0 z-0 opacity-40">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[#EAE4D5] blur-[120px]" />
-        </div>
+  const fadeIn = {
+    initial: { opacity: 0, y: 20 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.8 },
+  };
 
+  return (
+    <div className="bg-[#050505] text-[#B6B09F] selection:bg-[#EAE4D5] selection:text-black">
+      {/* HERO SECTION */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-30 z-10"
+          className="absolute inset-0 w-full h-full object-cover opacity-20 z-0 grayscale"
         >
           <source src={heroVideo} type="video/mp4" />
         </video>
 
-        {/* ANIMATED CONTENT AREA */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="relative z-20 text-center px-6 max-w-6xl"
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="inline-block mb-4 px-3 py-1 border border-[#B6B09F]/30 rounded-full"
-          >
-            <span className="text-xs tracking-[0.3em] uppercase text-[#B6B09F]">
-              EXPANDING THE SOUND
-            </span>
-          </motion.div>
-
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold text-[#EAE4D5] mb-8 tracking-tighter leading-none">
-            MOTION
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#EAE4D5] via-[#B6B09F] to-[#EAE4D5]">
-              WORKS
-            </span>
-          </h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="text-lg md:text-2xl max-w-2xl mx-auto mb-10 text-[#B6B09F] font-light"
-          >
-            Elevating African talent to global prominence through{" "}
-            <span className="text-[#EAE4D5] font-medium">
-              innovative music solutions
-            </span>
-            .
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
-          >
-            <Link
-              to="/services"
-              className="group relative px-10 py-4 bg-[#EAE4D5] text-[#0a0a0a] font-bold overflow-hidden transition-all duration-300 hover:pr-14"
-            >
-              <span className="relative z-10">OUR SERVICES</span>
-              <span className="absolute right-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                →
+        <div className="relative z-10 text-center px-6">
+          <motion.div {...fadeIn} className="flex flex-col items-center">
+            <div className="mb-10 md:mb-14">
+              <img
+                src={logo}
+                alt="Motion Works Logo"
+                className="h-70 md:h-100 w-auto object-contain brightness-110"
+              />
+            </div>
+            <p className="text-sm md:text-lg max-w-xl -mt-16 mx-auto mb-12 text-[#B6B09F]/80 font-light leading-relaxed tracking-wide">
+              Distribute your music, find collaborators and get paid —
+              <span className="text-[#EAE4D5] block italic mt-1">
+                all in one place.
               </span>
-            </Link>
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/signup"
+                className="px-10 py-4 bg-[#EAE4D5] text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:scale-105 transition-all"
+              >
+                Start Releasing
+              </Link>
+            </div>
           </motion.div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <div className="w-[1px] h-12 bg-gradient-to-b from-[#EAE4D5] to-transparent" />
+          <span className="text-[8px] uppercase tracking-[0.4em]">Scroll</span>
+        </div>
+      </section>
+
+      {/* CORE CAPABILITIES SECTION (Replaces Featured/Promo) */}
+      <section className="py-32 px-6 max-w-7xl mx-auto">
+        <motion.div
+          {...fadeIn}
+          className="grid grid-cols-1 md:grid-cols-3 gap-16"
+        >
+          <div className="space-y-6">
+            <span className="text-4xl font-serif italic text-[#EAE4D5]">
+              01.
+            </span>
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#EAE4D5]">
+              Seamless Distribution
+            </h3>
+            <p className="text-sm leading-relaxed font-light text-[#B6B09F]/60">
+              Deliver your masters to Spotify, Apple Music, and TikTok with zero
+              friction. We handle the technical delivery so you stay in the
+              creative flow.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <span className="text-4xl font-serif italic text-[#EAE4D5]">
+              02.
+            </span>
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#EAE4D5]">
+              Verified Collaboration
+            </h3>
+            <p className="text-sm leading-relaxed font-light text-[#B6B09F]/60">
+              Connect with verified artists and producers. Our digital split
+              sheets and automated contracts ensure everyone is protected from
+              day one.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <span className="text-4xl font-serif italic text-[#EAE4D5]">
+              03.
+            </span>
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-[#EAE4D5]">
+              Automated Royalties
+            </h3>
+            <p className="text-sm leading-relaxed font-light text-[#B6B09F]/60">
+              No more manual accounting. Get paid directly through our secure
+              fintech integrations with transparent, real-time revenue tracking.
+            </p>
+          </div>
         </motion.div>
       </section>
-      {/* Featured Artists */}
-      <section className="py-20 px-6 md:px-20">
-        <div className="flex justify-between items-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#EAE4D5]">
-            Featured Artists
+
+      {/* CTA / BANNER SECTION */}
+      <section className="py-32 border-y border-[#B6B09F]/10 bg-[#080808]">
+        <motion.div {...fadeIn} className="text-center space-y-8">
+          <h2 className="text-4xl md:text-6xl font-serif text-[#EAE4D5]">
+            Ready to Create?
           </h2>
           <Link
-            to="/services/label-services"
-            className="text-[#B6B09F] hover:text-[#EAE4D5] transition"
+            to="/signup"
+            className="inline-block px-12 py-5 bg-transparent border border-[#EAE4D5] text-[#EAE4D5] text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#EAE4D5] hover:text-black transition-all"
           >
-            View All →
+            Apply for Entry
           </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {featuredArtists.map((artist) => (
-            <Link
-              to={`/artists/${artist.id}`}
-              key={artist.id}
-              className="group relative h-[500px] overflow-hidden"
-            >
-              <div
-                className="absolute inset-5 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url(${artist.image})` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-              <div className="relative h-full flex flex-col justify-end p-8">
-                <h3 className="text-4xl font-bold text-[#EAE4D5] mb-2">
-                  {artist.name}
-                </h3>
-                <p className="text-[#B6B09F] mb-4">
-                  {artist.genre} • Latest Release: {artist.latestTrack}
-                </p>
-                <div className="flex gap-4">
-                  <FaInstagram className="text-xl hover:text-[#EAE4D5] transition" />
-                  <FaTwitter className="text-xl hover:text-[#EAE4D5] transition" />
-                  <FaTiktok className="text-xl hover:text-[#EAE4D5] transition" />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        </motion.div>
       </section>
 
-      {/* Large Carousel Section */}
-      <section className="py-20 px-6 md:px-20 bg-[#0a0a0a] border-t border-[#B6B09F]/20">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#EAE4D5] mb-12 text-center">
-            Recent Promo from Clients and Partners
-          </h2>
-
-          <div
-            className="relative group"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-          >
-            {/* Carousel Container */}
-            <div className="relative h-[400px] md:h-[500px] lg:h-[600px] w-full overflow-hidden rounded-xl">
-              {clients.map((client, index) => (
-                <div
-                  key={index}
-                  className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-                >
-                  <div className="absolute inset-0 bg-black/30 z-10"></div>
-                  <img
-                    src={client.logo}
-                    alt={client.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 z-20 p-8 md:p-12 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#EAE4D5]">
-                      {client.name}
-                    </h3>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Navigation Arrows */}
-            <button
-              onClick={handlePrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-[#0a0a0a]/80 hover:bg-[#0a0a0a] text-[#EAE4D5] p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
-              aria-label="Previous slide"
-            >
-              <FaChevronLeft className="text-2xl" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-[#0a0a0a]/80 hover:bg-[#0a0a0a] text-[#EAE4D5] p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
-              aria-label="Next slide"
-            >
-              <FaChevronRight className="text-2xl" />
-            </button>
-
-            {/* Dots Indicator */}
-            <div className="flex justify-center mt-6 gap-2">
-              {clients.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${currentIndex === index ? "bg-[#EAE4D5] w-6" : "bg-[#B6B09F] opacity-50"}`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* FOOTER MINI */}
+      <footer className="py-12 px-6 text-center">
+        <p className="text-[10px] tracking-[0.2em] text-[#B6B09F]/30 uppercase">
+          © 2026 Motion Works • Lagos, Nigeria
+        </p>
+      </footer>
     </div>
   );
 }

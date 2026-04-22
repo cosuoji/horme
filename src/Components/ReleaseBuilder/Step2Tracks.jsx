@@ -14,6 +14,7 @@ import { toast } from "react-hot-toast";
 import ArtistsTab from "./Step2Tabs/ArtistsTab";
 import WritersTab from "./Step2Tabs/WritersTab";
 import CreditsTab from "./Step2Tabs/CreditsTab";
+import LyricsTab from "./Step2Tabs/LyricsTab";
 
 const Step2Tracks = ({
   data,
@@ -386,24 +387,59 @@ const Step2Tracks = ({
 
             {/* TAB NAVIGATION */}
             <nav className="flex px-6 border-b border-[#B6B09F]/10 bg-[#0a0a0a] overflow-x-auto no-scrollbar">
-              {["artists", "writers", "credits"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-6 text-[10px] uppercase tracking-[0.2em] font-bold border-b-2 transition-all whitespace-nowrap ${
-                    activeTab === tab
-                      ? "border-[#EAE4D5] text-[#EAE4D5]"
-                      : "border-transparent text-[#B6B09F]/30 hover:text-[#B6B09F]"
-                  }`}
-                >
-                  {tab === "artists" && "Artist Roles"}
-                  {tab === "writers" && "Writer Roles"}
-                  {tab === "credits" && "Additional Credits"}
-                </button>
-              ))}
+              {["general", "artists", "writers", "credits", "lyrics"].map(
+                (tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`py-4 px-6 text-[10px] uppercase tracking-[0.2em] font-bold border-b-2 transition-all whitespace-nowrap ${
+                      activeTab === tab
+                        ? "border-[#EAE4D5] text-[#EAE4D5]"
+                        : "border-transparent text-[#B6B09F]/30 hover:text-[#B6B09F]"
+                    }`}
+                  >
+                    {tab === "general" && "General Info"}
+                    {tab === "artists" && "Artist Roles"}
+                    {tab === "writers" && "Writer Roles"}
+                    {tab === "credits" && "Additional Credits"}
+                    {tab === "lyrics" && "Lyrics"}
+                  </button>
+                ),
+              )}
             </nav>
             {/* DYNAMIC TAB CONTENT */}
             <div className="flex-1 overflow-y-auto p-8 bg-[#050505] custom-scrollbar">
+              {activeTab === "general" && (
+                <div className="space-y-6 max-w-lg">
+                  <div>
+                    <label className="text-[10px] text-[#B6B09F]/50 uppercase tracking-widest block mb-2">
+                      Track Title
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full bg-[#0a0a0a] border border-[#B6B09F]/20 rounded-lg p-4 text-[#EAE4D5] focus:border-[#EAE4D5] outline-none transition-all"
+                      value={data.tracks[editingTrackIndex].title}
+                      onChange={(e) =>
+                        updateTrackMetadata("title", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  {/* You can also move the EXPLICIT toggle here */}
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={data.tracks[editingTrackIndex].explicit}
+                      onChange={(e) =>
+                        updateTrackMetadata("explicit", e.target.checked)
+                      }
+                    />
+                    <label className="text-xs text-[#B6B09F]">
+                      Mark as Explicit Content
+                    </label>
+                  </div>
+                </div>
+              )}
               {activeTab === "artists" && (
                 <ArtistsTab
                   track={data.tracks[editingTrackIndex]}
@@ -425,6 +461,13 @@ const Step2Tracks = ({
                   track={data.tracks[editingTrackIndex]}
                   onUpdate={updateTrackMetadata}
                   onApplyToAll={applyToAllTracks}
+                />
+              )}
+
+              {activeTab === "lyrics" && (
+                <LyricsTab
+                  track={data.tracks[editingTrackIndex]}
+                  onUpdate={updateTrackMetadata}
                 />
               )}
             </div>

@@ -10,15 +10,9 @@ import {
 //Static Pages
 import Homepage from "./Pages/Homepage";
 import About from "./Pages/About";
-import Services from "./Pages/Services";
+
 import Contact from "./Pages/Contact";
 import Footer from "./Layout/Footer";
-import Clubs from "./Pages/Clubs";
-import InfluencerMarketing from "./Pages/InfluencerMarketing";
-import PrComms from "./Pages/PrComms";
-import Radio from "./Pages/Radio";
-import Label from "./Pages/Label";
-import ArtistPage from "./Components/ArtistPage";
 import Terms from "./Pages/Terms";
 import PrivacyPolicy from "./Pages/PrivacyPolicy";
 import CookieConsent from "./Components/CookieConsent";
@@ -102,19 +96,6 @@ const AppContent = () => {
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/about" element={<About />} />
-            <Route path="/artists/:id" element={<ArtistPage />} />
-            <Route path="/services">
-              <Route index element={<Services />} />
-              <Route path="clubs" element={<Clubs />} />
-              <Route
-                path="influencer-marketing"
-                element={<InfluencerMarketing />}
-              />
-              <Route path="pr-comms" element={<PrComms />} />
-              <Route path="radio" element={<Radio />} />
-              <Route path="label-services" element={<Label />} />
-            </Route>
-
             <Route path="/contact" element={<Contact />} />
             <Route
               path="/login"
