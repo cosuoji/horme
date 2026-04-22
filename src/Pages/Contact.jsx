@@ -24,7 +24,7 @@ export default function Contact() {
         <div className="hover:text-[#EAE4D5] transition-colors duration-300">
           <Mail className="mx-auto mb-2" size={32} />
           <h3 className="text-lg font-semibold mb-1">Email</h3>
-          <p>hormeagency12@gmail.com</p>
+          <p>info@motionworks.com</p>
         </div>
         <div className="hover:text-[#EAE4D5] transition-colors duration-300">
           <Phone className="mx-auto mb-2" size={32} />

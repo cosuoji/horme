@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "../assets/motion.png";
 import { useUserStore } from "../store/useUserStore";
 
 const Header = () => {
@@ -34,7 +34,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="font-bold">
-              <img className="h-10 w-auto" src={logo} alt="Logo" />
+              <img className="h-20 w-auto" src={logo} alt="Logo" />
             </Link>
           </div>
 

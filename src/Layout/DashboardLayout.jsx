@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { useUserStore } from "../store/useUserStore";
-import logo from "../assets/logo.png";
+import logo from "../assets/motion.png";
 import {
   FaChartLine,
   FaWallet,

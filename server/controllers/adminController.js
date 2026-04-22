@@ -225,7 +225,7 @@ export const processRelease = async (req, res) => {
     });
 
     // --- 📧 Trigger Email Notifications ---
-    const ownerEmail = release.releaseOwner?.email;
+    const ownerEmail = req.user?.email;
     const ownerName = release.releaseOwner?.stageName || "Artist";
 
     if (ownerEmail) {

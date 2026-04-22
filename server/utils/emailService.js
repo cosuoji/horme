@@ -7,7 +7,7 @@ dotenv.config();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const companyLogo =
-  "https://res.cloudinary.com/diwz3uvgw/image/upload/v1774822263/RTNBH75_st5ygg.png";
+  "https://res.cloudinary.com/dvnolhdyk/image/upload/v1776817091/h0wou8gestqhgwfhsmag.png";
 
 // 🎨 Helper for the premium dark template wrapper
 const emailWrapper = (content) => `
