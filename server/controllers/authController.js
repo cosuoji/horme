@@ -95,7 +95,7 @@ export const logoutUser = (req, res) => {
     expires: new Date(0), // Sets expiration to the past to kill it
     secure: true, // 🚀 MUST be true in production
     sameSite: "lax", // 🚀 MUST match your login setting
-    domain: isProduction ? ".hormemusic.com" : undefined, // 🚀 MUST match login domain
+    domain: isProduction ? ".usemotionworks.com" : undefined, // 🚀 MUST match login domain
   });
 
   res.status(200).json({ message: "Logged out successfully" });

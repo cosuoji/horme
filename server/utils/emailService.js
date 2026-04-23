@@ -41,7 +41,7 @@ export const sendVerificationEmail = async (email, name, token) => {
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@hormemusic.com>", // 👈 Requires a verified domain on Resend
+    from: "Horme Music <info@usemotionworks.com>", // 👈 Requires a verified domain on Resend
     to: email,
     subject: "Verify your account | Horme Music",
     html,
@@ -64,7 +64,7 @@ export const sendForgotPasswordEmail = async (email, token) => {
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@hormemusic.com>",
+    from: "Horme Music <info@usemotionworks.com>",
     to: email,
     subject: "Password Reset Request | Horme Music",
     html,
@@ -85,7 +85,7 @@ export const sendReleaseApprovalEmail = async (email, name, releaseTitle) => {
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@hormemusic.com>",
+    from: "Horme Music <info@usemotionworks.com>",
     to: email,
     subject: `Approved: ${releaseTitle} | Horme Music`,
     html,
@@ -116,7 +116,7 @@ export const sendReleaseRejectionEmail = async (
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@hormemusic.com>",
+    from: "Horme Music <info@usemotionworks.com>",
     to: email,
     subject: `Update regarding your submission: ${releaseTitle}`,
     html,

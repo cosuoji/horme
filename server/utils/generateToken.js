@@ -12,7 +12,7 @@ const generateToken = (res, userId) => {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "lax" : "strict",
-    domain: isProduction ? ".hormemusic.com" : undefined,
+    domain: isProduction ? ".usemotionworks.com" : undefined,
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 };
