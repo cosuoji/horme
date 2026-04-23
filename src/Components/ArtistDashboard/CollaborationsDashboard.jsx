@@ -59,8 +59,6 @@ const CollaborationsDashboard = () => {
     }
   }, []);
 
-  console.log(incoming);
-
   useEffect(() => {
     fetchCollabs();
   }, [fetchCollabs]);

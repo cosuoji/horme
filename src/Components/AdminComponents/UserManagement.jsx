@@ -19,8 +19,6 @@ const UserManagement = () => {
     }
   };
 
-  console.log(users);
-
   useEffect(() => {
     fetchUsers();
   }, []);
