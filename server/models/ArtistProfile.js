@@ -8,7 +8,7 @@ const artistProfileSchema = new mongoose.Schema(
       ref: "User",
     },
     // General
-    profileImage: { type: String, default: "" }, // Will hold Cloudinary URL
+    profileImage: { type: String, default: "" },
     artistName: { type: String },
     description: { type: String },
     country: { type: String },

@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import heroVideo from "../assets/label-showreel.mp4";
 import useSEO from "../hooks/useSEO";
 import logo from "../assets/motion.png";
+import { useUserStore } from "../store/useUserStore";
 
 export default function Homepage() {
+  const { user } = useUserStore(); // 👈 Access user state
+
   useSEO({
     title: "Home",
     description:
@@ -16,6 +19,12 @@ export default function Homepage() {
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true },
     transition: { duration: 0.8 },
+  };
+
+  // Helper for dynamic link logic
+  const getHeroPath = () => {
+    if (!user) return "/signup";
+    return user.role === "admin" ? "/admin" : "/dashboard";
   };
 
   return (
@@ -49,10 +58,10 @@ export default function Homepage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/signup"
+                to={getHeroPath()}
                 className="px-10 py-4 bg-[#EAE4D5] text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:scale-105 transition-all"
               >
-                Start Releasing
+                {user ? "Go to Dashboard" : "Start Releasing"}
               </Link>
             </div>
           </motion.div>
@@ -121,10 +130,10 @@ export default function Homepage() {
             Ready to Create?
           </h2>
           <Link
-            to="/signup"
+            to={getHeroPath()}
             className="inline-block px-12 py-5 bg-transparent border border-[#EAE4D5] text-[#EAE4D5] text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#EAE4D5] hover:text-black transition-all"
           >
-            Apply for Entry
+            {user ? "Access Dashboard" : "Apply for Entry"}
           </Link>
         </motion.div>
       </section>

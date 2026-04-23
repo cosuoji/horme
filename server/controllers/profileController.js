@@ -1,6 +1,9 @@
 import ArtistProfile from "../models/ArtistProfile.js";
-import cloudinary from "../config/cloudinary.js";
-import streamifier from "streamifier";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import dotenv from "dotenv";
+dotenv.config();
+
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
 // @desc    Get current user's artist profile
 // @route   GET /api/profile
@@ -35,7 +38,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Upload artist profile image to Cloudinary
+// @desc    Upload artist profile image to AWS
 // @route   POST /api/users/profile/image
 // @access  Private
 export const uploadProfileImage = async (req, res) => {
@@ -44,75 +47,34 @@ export const uploadProfileImage = async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const cld_upload_stream = cloudinary.uploader.upload_stream(
+    // 1. Define S3 Upload Parameters
+    const fileKey = `artist_profiles/${req.user._id}-${Date.now()}-${req.file.originalname}`;
+    const uploadParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: fileKey,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+    };
+
+    // 2. Execute Upload
+    await s3Client.send(new PutObjectCommand(uploadParams));
+
+    // Construct the public URL (ensure your bucket has public read or use CloudFront)
+    const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`;
+
+    // 3. Update Database
+    const updatedProfile = await ArtistProfile.findOneAndUpdate(
+      { user: req.user._id },
       {
-        folder: "artist_profiles",
-        transformation: [{ width: 500, height: 500, crop: "fill" }],
+        $set: { profileImage: imageUrl },
+        $setOnInsert: { artistName: req.user.stageName || "New Artist" },
       },
-      async (error, result) => {
-        if (error) {
-          console.error("Cloudinary Error:", error);
-          return res.status(500).json({ message: "Cloudinary upload failed" });
-        }
-
-        try {
-          // We use $set to only update the image.
-          // We include artistName from the user object as a fallback for the upsert
-          const updatedProfile = await ArtistProfile.findOneAndUpdate(
-            { user: req.user._id },
-            {
-              $set: { profileImage: result.secure_url },
-              $setOnInsert: { artistName: req.user.stageName || "New Artist" },
-            },
-            { upsert: true, new: true, runValidators: false }, // runValidators: false bypasses the requirement check for this specific update
-          );
-
-          res.status(200).json({ imageUrl: result.secure_url });
-        } catch (dbError) {
-          console.error("Database Error:", dbError);
-          res
-            .status(500)
-            .json({ message: "Failed to update profile in database" });
-        }
-      },
+      { upsert: true, new: true, runValidators: false },
     );
 
-    streamifier.createReadStream(req.file.buffer).pipe(cld_upload_stream);
+    res.status(200).json({ imageUrl });
   } catch (error) {
-    console.error("Server Crash:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-// @desc    Upload release artwork to Cloudinary
-// @route   POST /api/users/release-artwork
-// @access  Private
-export const uploadReleaseArtwork = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: "release_artworks", // 👈 Separated folder
-        // We aren't forcing a crop here because release artwork needs to be high-fidelity.
-        // We just ensure it's delivered securely.
-      },
-      (error, result) => {
-        if (error) {
-          console.error("Cloudinary Error:", error);
-          return res.status(500).json({ message: "Cloudinary upload failed" });
-        }
-
-        // Return the secure URL back to the frontend
-        res.status(200).json({ imageUrl: result.secure_url });
-      },
-    );
-
-    streamifier.createReadStream(req.file.buffer).pipe(stream);
-  } catch (error) {
-    console.error("Server Crash:", error);
-    res.status(500).json({ message: "Server Error", error: error.message });
+    console.error("S3 Upload/DB Error:", error);
+    res.status(500).json({ message: "Upload failed", error: error.message });
   }
 };

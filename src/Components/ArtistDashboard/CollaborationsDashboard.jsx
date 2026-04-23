@@ -148,7 +148,10 @@ const CollaborationsDashboard = () => {
 
   const executeResponse = async (id, status, feedback) => {
     try {
-      await axios.patch(`/api/collaborations/${id}`, { status, feedback });
+      await axios.patch(`/api/collaborations/${id}/respond`, {
+        status,
+        feedback,
+      });
       toast.success(`Collaboration ${status}`);
 
       // ADD THESE LINES:

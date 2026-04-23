@@ -11,7 +11,6 @@ import {
   getProfile,
   updateProfile,
   uploadProfileImage,
-  uploadReleaseArtwork,
 } from "../controllers/profileController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -49,13 +48,6 @@ router.post(
   protect,
   upload.single("profileImage"),
   uploadProfileImage,
-);
-
-router.post(
-  "/release-artwork",
-  protect,
-  upload.single("artwork"),
-  uploadReleaseArtwork,
 );
 
 // NEW: Request support route

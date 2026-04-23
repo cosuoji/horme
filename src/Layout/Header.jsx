@@ -96,12 +96,13 @@ const Header = () => {
                   {link.name}
                 </Link>
               ))}
+              {/* 👈 Updated this line to match desktop logic */}
               <Link
                 to={getDistributePath()}
                 className={ctaClasses}
                 onClick={toggleMenu}
               >
-                Distribute With Us
+                {user ? "My Dashboard" : "Distribute With Us"}
               </Link>
             </div>
           </nav>

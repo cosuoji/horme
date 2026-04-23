@@ -105,14 +105,13 @@ const ArtistProfileForm = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Quick client-side check
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File is too large. Max size is 5MB.");
       return;
     }
 
     const formDataToSend = new FormData();
-    formDataToSend.append("profileImage", file);
+    formDataToSend.append("profileImage", file); // Ensure this match your multer field name
 
     setImageUploading(true);
     try {
@@ -120,9 +119,9 @@ const ArtistProfileForm = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Update local state with the new Cloudinary URL
+      // Local state now updates with the S3 URL
       setFormData((prev) => ({ ...prev, profileImage: data.imageUrl }));
-      toast.success("Profile image uploaded!");
+      toast.success("Profile image updated on storage!");
     } catch (error) {
       toast.error("Failed to upload image.");
       console.error(error);
@@ -240,7 +239,7 @@ const ArtistProfileForm = () => {
                     className={`px-4 py-2 bg-[#B6B09F]/10 hover:bg-[#B6B09F]/20 text-[#EAE4D5] rounded-lg cursor-pointer transition-colors text-sm font-medium inline-block ${imageUploading ? "opacity-50 cursor-wait" : ""}`}
                   >
                     {imageUploading
-                      ? "Uploading to Cloudinary..."
+                      ? "Uploading to Storage..."
                       : "Choose Image"}
                   </label>
                   <p className="text-[#B6B09F]/60 text-xs mt-2">
