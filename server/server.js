@@ -26,8 +26,8 @@ const app = express();
 app.set("trust proxy", 1);
 
 const allowedOrigins = [
-  "https://hormemusic.com",
-  "https://www.hormemusic.com",
+  "https://usemotionworks.com",
+  "https://www.usemotionworks.com",
   "http://localhost:5173", // for local dev
 ];
 
