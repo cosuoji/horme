@@ -66,6 +66,12 @@ const Footer = () => {
             >
               Terms & Conditions
             </a>
+            <a
+              href="/docs"
+              className="text-[#B6B09F] hover:text-[#EAE4D5] transition duration-300"
+            >
+              Documentation
+            </a>
           </div>
         </div>
 
