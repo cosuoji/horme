@@ -137,13 +137,6 @@ export default function Homepage() {
           </Link>
         </motion.div>
       </section>
-
-      {/* FOOTER MINI */}
-      <footer className="py-12 px-6 text-center">
-        <p className="text-[10px] tracking-[0.2em] text-[#B6B09F]/30 uppercase">
-          © 2026 Motion Works • Lagos, Nigeria
-        </p>
-      </footer>
     </div>
   );
 }

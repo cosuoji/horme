@@ -32,6 +32,7 @@ import ResetPassword from "./Pages/ResetPassword";
 
 // Documentation
 import Documentation from "./Components/Documentation";
+import ArticleDetail from "./Components/ArticleDetail";
 
 //Protected Routes
 import ProtectedRoute from "./Components/ProtectedRoute";
@@ -169,6 +170,7 @@ const AppContent = () => {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/cookie-policy" element={<CookiePolicy />} />
             <Route path="/docs" element={<Documentation />} />
+            <Route path="/docs/:slug" element={<ArticleDetail />} />
           </Routes>
         </Layout>
       </main>
