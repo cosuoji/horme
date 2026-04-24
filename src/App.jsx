@@ -30,6 +30,9 @@ import VerifyEmail from "./Pages/VerifyEmail";
 import ForgotPassword from "./Pages/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword";
 
+// Documentation
+import Documentation from "./Components/Documentation";
+
 //Protected Routes
 import ProtectedRoute from "./Components/ProtectedRoute";
 import AdminRoute from "./Components/AdminRoute";
@@ -43,6 +46,9 @@ import ReleasesPage from "./Components/ArtistDashboard/ReleasesPage";
 import ArtistProfileForm from "./Components/ArtistDashboard/ArtistProfileForm";
 import Index from "./Components/ReleaseBuilder/Index";
 import CollaborationsDashboard from "./Components/ArtistDashboard/CollaborationsDashboard";
+import TicketList from "./Components/ArtistDashboard/TicketList";
+import NewTicket from "./Components/ArtistDashboard/TicketCreationForm";
+import TicketThread from "./Components/TicketThread";
 
 //Admin routes
 import AdminOverview from "./Components/AdminComponents/AdminOverview";
@@ -50,6 +56,7 @@ import UserManagement from "./Components/AdminComponents/UserManagement";
 import ReleaseApprovalQueue from "./Components/AdminComponents/ReleaseApprovalQueue";
 import WithdrawalManager from "./Components/AdminComponents/WithdrawalManager";
 import ActivityLog from "./Components/AdminComponents/ActivityLog";
+import AdminTickets from "./Components/AdminComponents/AdminTickets";
 
 //Auth Pages
 import { useUserStore } from "./store/useUserStore";
@@ -124,6 +131,11 @@ const AppContent = () => {
               <Route path="releases" element={<ReleaseApprovalQueue />} />
               <Route path="withdrawals" element={<WithdrawalManager />} />
               <Route path="logs" element={<ActivityLog />} />
+              <Route path="tickets" element={<AdminTickets />} />
+              <Route
+                path="tickets/:id"
+                element={<TicketThread isAdminView={true} />}
+              />
             </Route>
 
             {/* Artist Portal Routes - Protected */}
@@ -143,6 +155,9 @@ const AppContent = () => {
                 path="collaborations"
                 element={<CollaborationsDashboard />}
               />
+              <Route path="tickets" element={<TicketList />} />
+              <Route path="tickets/new" element={<NewTicket />} />
+              <Route path="tickets/:id" element={<TicketThread />} />
               <Route path="releases" element={<ReleasesPage />} />
               <Route path="releases/new" element={<Index />} />
               <Route path="releases/edit/:id" element={<Index />} />
@@ -153,6 +168,7 @@ const AppContent = () => {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/docs" element={<Documentation />} />
           </Routes>
         </Layout>
       </main>

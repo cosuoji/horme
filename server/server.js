@@ -1,6 +1,6 @@
 // server.js
 import dotenv from "dotenv";
-dotenv.config();
+import cron from "node-cron";
 
 import express from "express";
 import mongoose from "mongoose";
@@ -18,9 +18,11 @@ import userRoutes from "./routes/userRoutes.js";
 import scoutRoutes from "./routes/scoutRoutes.js";
 import releaseRoutes from "./routes/releaseRoutes.js";
 import collaborationsRoutes from "./routes/collaborations.js";
+import ticketRoutes from "./routes/ticketRoutes.js";
 
 //Error Middleware
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+dotenv.config();
 
 const app = express();
 app.set("trust proxy", 1);
@@ -59,6 +61,20 @@ const limiter = rateLimit({
   max: 100,
   message: "Too many requests from this IP, please try again later.",
 });
+
+cron.schedule("0 0 * * *", async () => {
+  const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+
+  await Ticket.updateMany(
+    {
+      status: "resolved",
+      resolvedAt: { $lte: tenDaysAgo },
+    },
+    { status: "closed" },
+  );
+  console.log("Cleanup: Closed tickets resolved over 10 days ago.");
+});
+
 app.use("/api/", limiter);
 
 // --- Database Connection ---
@@ -82,6 +98,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/scouts", scoutRoutes);
 app.use("/api/releases", releaseRoutes);
 app.use("/api/collaborations", collaborationsRoutes);
+app.use("/api/tickets", ticketRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

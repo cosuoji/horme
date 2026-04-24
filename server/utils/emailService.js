@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Initialize Resend with your API Key (add this to your .env)
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const resend = new Resend(process.env.RESEND_API_KEY);
 
 const companyLogo =
   "https://res.cloudinary.com/dvnolhdyk/image/upload/v1776817091/h0wou8gestqhgwfhsmag.png";
@@ -41,9 +41,9 @@ export const sendVerificationEmail = async (email, name, token) => {
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@usemotionworks.com>", // 👈 Requires a verified domain on Resend
+    from: "Motion Works <info@usemotionworks.com>", // 👈 Requires a verified domain on Resend
     to: email,
-    subject: "Verify your account | Horme Music",
+    subject: "Verify your account | Motion Works",
     html,
   });
 };
@@ -54,7 +54,7 @@ export const sendForgotPasswordEmail = async (email, token) => {
 
   const html = emailWrapper(`
     <h1 style="color: #EAE4D5; font-size: 24px; font-weight: bold; margin-bottom: 15px;">Reset Your Password</h1>
-    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">We received a request to reset the password for your Horme Music account. Click the button below to proceed. This link will expire in 1 hour.</p>
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">We received a request to reset the password for your Motion Works account. Click the button below to proceed. This link will expire in 1 hour.</p>
 
     <div style="text-align: center; margin: 35px 0;">
       <a href="${resetUrl}" style="background-color: #EAE4D5; color: #0a0a0a; padding: 14px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 14px;">Reset Password</a>
@@ -64,9 +64,9 @@ export const sendForgotPasswordEmail = async (email, token) => {
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@usemotionworks.com>",
+    from: "Motion Works <info@usemotionworks.com>",
     to: email,
-    subject: "Password Reset Request | Horme Music",
+    subject: "Password Reset Request | Motion Works",
     html,
   });
 };
@@ -85,9 +85,9 @@ export const sendReleaseApprovalEmail = async (email, name, releaseTitle) => {
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@usemotionworks.com>",
+    from: "Motion Works <info@usemotionworks.com>",
     to: email,
-    subject: `Approved: ${releaseTitle} | Horme Music`,
+    subject: `Approved: ${releaseTitle} | Motion Works`,
     html,
   });
 };
@@ -116,9 +116,57 @@ export const sendReleaseRejectionEmail = async (
   `);
 
   return await resend.emails.send({
-    from: "Horme Music <info@usemotionworks.com>",
+    from: "Motion Works <info@usemotionworks.com>",
     to: email,
     subject: `Update regarding your submission: ${releaseTitle}`,
+    html,
+  });
+};
+
+// 📩 Send Ticket Created Confirmation
+export const sendTicketCreatedEmail = async (
+  email,
+  name,
+  ticketId,
+  subject,
+) => {
+  const html = emailWrapper(`
+    <h1 style="color: #EAE4D5; font-size: 24px; font-weight: bold; margin-bottom: 15px;">Support Request Received</h1>
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Hello ${name}, we've opened a new support ticket for you regarding <strong>"${subject}"</strong>.</p>
+
+    <div style="background-color: rgba(182, 176, 159, 0.05); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+      <p style="margin: 0; font-size: 13px; color: #B6B09F;">Ticket ID: #${ticketId}</p>
+      <p style="margin: 5px 0 0 0; font-size: 14px; color: #EAE4D5;">Status: OPEN</p>
+    </div>
+
+    <div style="text-align: center; margin: 35px 0;">
+      <a href="${process.env.FRONTEND_URL}/dashboard/tickets" style="background-color: #EAE4D5; color: #0a0a0a; padding: 14px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 14px;">View Ticket Thread</a>
+    </div>
+  `);
+
+  return await resend.emails.send({
+    from: "Motion Works Support <support@usemotionworks.com>",
+    to: email,
+    subject: `Support Ticket #${ticketId.toString().slice(-6)} Received`,
+    html,
+  });
+};
+
+// 📩 Send Admin Reply Notification
+export const sendTicketReplyEmail = async (email, name, ticketId) => {
+  const html = emailWrapper(`
+    <h1 style="color: #EAE4D5; font-size: 24px; font-weight: bold; margin-bottom: 15px;">New Support Message</h1>
+    <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">Hi ${name}, an admin has replied to your support ticket #${ticketId.toString().slice(-6)}.</p>
+
+    <div style="text-align: center; margin: 35px 0;">
+      <a href="${process.env.FRONTEND_URL}/dashboard/tickets" style="background-color: #EAE4D5; color: #0a0a0a; padding: 14px 30px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block; font-size: 14px;">Read Reply</a>
+    </div>
+  `);
+
+  return await resend.emails.send({
+    from: "Motion Works Support <support@usemotionworks.com>",
+    to: email,
+    subject: `New reply to Ticket #${ticketId.toString().slice(-6)}`,
     html,
   });
 };

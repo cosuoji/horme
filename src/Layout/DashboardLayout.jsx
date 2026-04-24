@@ -10,6 +10,7 @@ import {
   FaSignOutAlt,
   FaBars,
   FaTimes,
+  FaTicketAlt,
   FaUserCircle,
   FaUsers, // 🚀 Added for Collabs
 } from "react-icons/fa";
@@ -24,6 +25,23 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [pendingCollabs, setPendingCollabs] = useState(0);
+  const [activeTickets, setActiveTickets] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [collabRes, ticketRes] = await Promise.all([
+          axios.get("/api/collaborations/pending-count"),
+          axios.get("/api/tickets/active-count"),
+        ]);
+        setPendingCollabs(collabRes.data.count);
+        setActiveTickets(ticketRes.data.count);
+      } catch (err) {
+        console.error("Notification sync failed");
+      }
+    };
+    fetchCounts();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -66,9 +84,15 @@ const DashboardLayout = () => {
       path: "/dashboard/collaborations",
       icon: <FaUsers />,
       badge: pendingCollabs,
-    }, // 🚀 New Link
+    },
     { name: "Wallet & Payouts", path: "/dashboard/wallet", icon: <FaWallet /> },
     { name: "Settings", path: "/dashboard/settings", icon: <FaCog /> },
+    {
+      name: "Support",
+      path: "/dashboard/tickets",
+      icon: <FaTicketAlt />,
+      badge: activeTickets,
+    },
   ];
 
   return (
